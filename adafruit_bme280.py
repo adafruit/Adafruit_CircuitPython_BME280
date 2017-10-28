@@ -179,7 +179,6 @@ class Adafruit_BME280:
         self.dig_H4 = float((coeff[2] << 4) |  (coeff[3] & 0xF))
         self.dig_H5 = float(((coeff[3] & 0xF0) << 4) | coeff[4])
         self.dig_H6 = float(coeff[5])
-
         #print("%d %d %d" % (self.dig_T1, self.dig_T2, self.dig_T3))
         #print("%d %d %d" % (self.dig_P1, self.dig_P2, self.dig_P3))
         #print("%d %d %d" % (self.dig_P4, self.dig_P5, self.dig_P6))
