@@ -20,7 +20,7 @@
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 # THE SOFTWARE.
 """
-`adafruit_bmp280`
+`adafruit_bme280`
 ====================================================
 
 CircuitPython driver from BME280 Temperature, Humidity and Barometic Pressure sensor
@@ -63,6 +63,7 @@ _BME280_HUMIDITY_MIN     = const(0)
 _BME280_HUMIDITY_MAX     = const(100)
 
 class Adafruit_BME280:
+    """Driver from BME280 Temperature, Humidity and Barometic Pressure sensor"""
     def __init__(self):
         """Check the BME280 was found, read the coefficients and enable the sensor for continuous reads"""
         # Check device ID.
@@ -73,16 +74,17 @@ class Adafruit_BME280:
         time.sleep(0.5)
         self._read_coefficients()
         self.seaLevelhPa = 1013.25
+        """Pressure in hectoPascals at sea level. Used to calibrate `altitude`."""
         self._write_register_byte(_BME280_REGISTER_CTRL_HUM, 0x03)  # turn on humidity oversample 16x
 
     @property
     def temperature(self):
-        """Gets the compensated temperature in degrees celsius."""
+        """The compensated temperature in degrees celsius."""
         # perform one measurement
         self._write_register_byte(_BME280_REGISTER_CTRL_MEAS, 0xFE) # high res, forced mode
-        
+
         # Wait for conversion to complete
-        while (self._read_byte(_BME280_REGISTER_STATUS) & 0x08):    
+        while (self._read_byte(_BME280_REGISTER_STATUS) & 0x08):
             time.sleep(0.002)
         UT = self._read24(_BME280_REGISTER_TEMPDATA) / 16  # lowest 4 bits get dropped
         #print("raw temp: ", UT)
@@ -95,16 +97,16 @@ class Adafruit_BME280:
 
         self.t_fine = int(var1 + var2)
         #print("t_fine: ", self.t_fine)
-        
+
         temp = (var1 + var2) / 5120.0
         return temp
 
     @property
     def pressure(self):
-        """Gets the compensated pressure in hectoPascals."""
+        """The compensated pressure in hectoPascals."""
         self.temperature  # force read of t_fine
-        
-        # Algorithm from the BME280 driver https://github.com/BoschSensortec/BME280_driver/blob/master/bme280.c   
+
+        # Algorithm from the BME280 driver https://github.com/BoschSensortec/BME280_driver/blob/master/bme280.c
         adc = self._read24(_BME280_REGISTER_PRESSUREDATA) / 16  # lowest 4 bits get dropped
         var1 = float(self.t_fine) / 2.0 - 64000.0
         var2 = var1 * var1 * self.dig_P6 / 32768.0
@@ -123,14 +125,15 @@ class Adafruit_BME280:
             p = p + (var1 + var2 + self.dig_P7) / 16.0
 
             p /= 100
-            if (p < _BME280_PRESSURE_MIN_HPA):  return _BME280_PRESSURE_MIN_HPA 
-            if (p > _BME280_PRESSURE_MAX_HPA):  return _BME280_PRESSURE_MAX_HPA 
+            if (p < _BME280_PRESSURE_MIN_HPA):  return _BME280_PRESSURE_MIN_HPA
+            if (p > _BME280_PRESSURE_MAX_HPA):  return _BME280_PRESSURE_MAX_HPA
             return p
         else:
             return _BME280_PRESSURE_MIN_HPA
-        
+
     @property
     def humidity(self):
+        """The relative humidity in RH %"""
         self.temperature  # force read of t_fine
         hum = self._read_register(_BME280_REGISTER_HUMIDDATA, 2)
         #print("Humidity data: ", hum)
@@ -140,27 +143,29 @@ class Adafruit_BME280:
         # Algorithm from the BME280 driver https://github.com/BoschSensortec/BME280_driver/blob/master/bme280.c
         var1 = float(self.t_fine) - 76800.0
         #print("var1 ", var1)
-	var2 = (self.dig_H4 * 64.0 + (self.dig_H5 / 16384.0) * var1)
+        var2 = (self.dig_H4 * 64.0 + (self.dig_H5 / 16384.0) * var1)
         #print("var2 ",var2)
-	var3 = adc - var2
+        var3 = adc - var2
         #print("var3 ",var3)
-	var4 = self.dig_H2 / 65536.0
+        var4 = self.dig_H2 / 65536.0
         #print("var4 ",var4)
-	var5 = (1.0 + (self.dig_H3 / 67108864.0) * var1)
+        var5 = (1.0 + (self.dig_H3 / 67108864.0) * var1)
         #print("var5 ",var5)
-	var6 = 1.0 + (self.dig_H6 / 67108864.0) * var1 * var5
+        var6 = 1.0 + (self.dig_H6 / 67108864.0) * var1 * var5
         #print("var6 ",var6)
-	var6 = var3 * var4 * (var5 * var6)
-	humidity = var6 * (1.0 - self.dig_H1 * var6 / 524288.0)
+        var6 = var3 * var4 * (var5 * var6)
+        humidity = var6 * (1.0 - self.dig_H1 * var6 / 524288.0)
 
-        if (humidity > _BME280_HUMIDITY_MAX):  return _BME280_HUMIDITY_MAX
-	if (humidity < _BME280_HUMIDITY_MIN):  return _BME280_HUMIDITY_MIN
+        if (humidity > _BME280_HUMIDITY_MAX):
+            return _BME280_HUMIDITY_MAX
+        if (humidity < _BME280_HUMIDITY_MIN):
+            return _BME280_HUMIDITY_MIN
         # else...
         return humidity
 
     @property
     def altitude(self):
-        """calculate the altitude based on the sea level pressure (seaLevelhPa) - which you must enter ahead of time)"""
+        """The altitude based on current `pressure` versus the sea level pressure (`seaLevelhPa`) - which you must enter ahead of time)"""
         p = self.pressure # in Si units for hPascal
         return 44330 * (1.0 - math.pow(p / self.seaLevelhPa, 0.1903));
 
@@ -185,7 +190,7 @@ class Adafruit_BME280:
         #print("%d %d %d" % (self.dig_P7, self.dig_P8, self.dig_P9))
         #print("%d %d %d" % (self.dig_H1, self.dig_H2, self.dig_H3))
         #print("%d %d %d" % (self.dig_H4, self.dig_H5, self.dig_H6))
-        
+
     def _read_byte(self, register):
         """Read a byte register value and return it"""
         return self._read_register(register, 1)[0]
@@ -197,7 +202,7 @@ class Adafruit_BME280:
             ret *= 256.0
             ret += float(b & 0xFF)
         return ret
-    
+
 class Adafruit_BME280_I2C(Adafruit_BME280):
     def __init__(self, i2c, address=_BME280_ADDRESS):
         import adafruit_bus_device.i2c_device as i2c_device
