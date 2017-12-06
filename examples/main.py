@@ -1,7 +1,7 @@
-import board
-import digitalio
-import busio
 import time
+
+import board
+import busio
 import adafruit_bme280
 
 # Create library object using our Bus I2C port
@@ -14,7 +14,7 @@ bme280 = adafruit_bme280.Adafruit_BME280_I2C(i2c)
 #bme280 = adafruit_bme280.Adafruit_BME280_SPI(spi, bme_cs)
 
 # change this to match the location's pressure (hPa) at sea level
-bme280.seaLevelhPa = 1013.25
+bme280.sea_level_pressure = 1013.25
 
 while True:
     print("\nTemperature: %0.1f C" % bme280.temperature)
