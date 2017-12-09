@@ -44,7 +44,7 @@ Usage Example
 	#bme280 = adafruit_bme280.Adafruit_BME280_SPI(spi, bme_cs)
 
 	# change this to match the location's pressure (hPa) at sea level
-	bme280.seaLevelhPa = 1013.25
+	bme280.sea_level_pressure = 1013.25
 
 	while True:
 	    print("\nTemperature: %0.1f C" % bme280.temperature)
