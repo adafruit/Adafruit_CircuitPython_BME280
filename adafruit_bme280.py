@@ -75,7 +75,7 @@ class Adafruit_BME280:
         # Check device ID.
         chip_id = self._read_byte(_BME280_REGISTER_CHIPID)
         if _BME280_CHIPID != chip_id:
-            raise RuntimeError('Failed to find BME280! Chip ID 0x%x' % id)
+            raise RuntimeError('Failed to find BME280! Chip ID 0x%x' % chip_id)
         self._write_register_byte(_BME280_REGISTER_SOFTRESET, 0xB6)
         time.sleep(0.5)
         self._read_coefficients()
