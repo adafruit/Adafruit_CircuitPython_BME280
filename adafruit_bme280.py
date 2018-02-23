@@ -20,7 +20,7 @@
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 # THE SOFTWARE.
 """
-`adafruit_bme280` - Adafruit BME680 - Temperature, Humidity, Pressure & Gas Sensor 
+`adafruit_bme280` - Adafruit BME680 - Temperature, Humidity, Pressure & Gas Sensor
 ====================================================================================
 
 CircuitPython driver from BME280 Temperature, Humidity and Barometic Pressure sensor
