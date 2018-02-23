@@ -178,8 +178,8 @@ class Adafruit_BME280:
 
     @property
     def altitude(self):
-        """The altitude based on current `pressure` versus the sea level pressure
-           (`sea_level_pressure`) - which you must enter ahead of time)"""
+        """The altitude based on current ``pressure`` versus the sea level pressure
+           (``sea_level_pressure``) - which you must enter ahead of time)"""
         pressure = self.pressure # in Si units for hPascal
         return 44330 * (1.0 - math.pow(pressure / self.sea_level_pressure, 0.1903))
 
