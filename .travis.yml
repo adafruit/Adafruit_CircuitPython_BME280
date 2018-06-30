@@ -1,31 +1,30 @@
-# This is a common .travis.yml for generating library release zip files for
-# CircuitPython library releases using circuitpython-build-tools.
-# See https://github.com/adafruit/circuitpython-build-tools for detailed setup
-# instructions.
-
 dist: trusty
 sudo: false
 language: python
 python:
-    - "3.6"
-
+- '3.6'
 cache:
-    pip: true
-
+  pip: true
 deploy:
-  provider: releases
-  api_key: $GITHUB_TOKEN
+- provider: releases
+  api_key: "$GITHUB_TOKEN"
   file_glob: true
-  file: $TRAVIS_BUILD_DIR/bundles/*
+  file: "$TRAVIS_BUILD_DIR/bundles/*"
   skip_cleanup: true
   on:
     tags: true
-
+- provider: pypi
+  user: adafruit-travis
+  on:
+    tags: true
+  password:
+    secure: hDbyx3IZpDVgmgbtrcZjmqgBCzDTwO0q0CqJJOMdCfAs7sGwW4GjhbAAxOqQAd9RS2pWbrmTRkToOxx/KML9HY+do1z4W2SPXCqYdVVAx5E2Krr8N5PjFmliTnOtWe+Y6JKQYE6di88CqIv9eaYiDEdOlExt69wRQh1pgJTOvNtmndGiXN2swQYVI8ta/pRVUtlpV2/KPczPnWH4CfWpw5ow8T+ldk+0lgPGO3c4IhcgIY1IVWimAbIPlrFT7QAGeqE+YvC3Fyl5HflCbo81GYJkCjo8LWnN27pIwFa51Z8XTh2CtjlOns5U4InuJx/dqQ9aMUsagv+HEBmwA/J+dyFf8c1KuaJkmvF0Q+nqHLfBd4hQ1V78eURqu2LWz0K/vCLUK21icCwjZKrLDysa58WJQnBqgJmE2yVnVC8w/1w9vY5taRVZbzMD4mEurYdo06b0QqiL7NyYhIEMmTFkEu5JEbFPZexk29UvPH4KsDtJEyfkfSqr8y5K1R7gn04Ej0RbAcJWLBtWIPtxeN//nGT6JPDpv/ZJIdemaWZ4iqE7Qw24bQhH+Dgk+tpaXW7Dzm49AXs3R9KzC+fAEag5FKgWHyttucB3j9zVf2SQ3YnYL12PCQxAzWSVcIqrR43uQTtonRHvo3F+4j4LTL7Ck+fFBNh2BJvLA6s75CQa6T8=
 install:
-  - pip install pylint circuitpython-travis-build-tools Sphinx sphinx-rtd-theme
-
+- pip install -r requirements.txt
+- pip install pylint circuitpython-travis-build-tools Sphinx sphinx-rtd-theme
 script:
-  - pylint adafruit_bme280.py
-  - ([[ ! -d "examples" ]] || pylint --disable=missing-docstring,invalid-name examples/*.py)
-  - circuitpython-build-bundles --filename_prefix adafruit-circuitpython-bme280 --library_location .
-  - cd docs && sphinx-build -E -W -b html . _build/html
+- pylint adafruit_bme280.py
+- ([[ ! -d "examples" ]] || pylint --disable=missing-docstring,invalid-name examples/*.py)
+- circuitpython-build-bundles --filename_prefix adafruit-circuitpython-bme280 --library_location
+  .
+- cd docs && sphinx-build -E -W -b html . _build/html && cd ..
