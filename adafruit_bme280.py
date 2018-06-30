@@ -249,13 +249,13 @@ class Adafruit_BME280_SPI(Adafruit_BME280):
     def _read_register(self, register, length):
         register = (register | 0x80) & 0xFF  # Read single, bit 7 high.
         with self._spi as spi:
-            spi.write(bytearray([register]))
+            spi.write(bytearray([register]))  #pylint: disable=no-member
             result = bytearray(length)
-            spi.readinto(result)
+            spi.readinto(result)              #pylint: disable=no-member
             #print("$%02X => %s" % (register, [hex(i) for i in result]))
             return result
 
     def _write_register_byte(self, register, value):
         register &= 0x7F  # Write, bit 7 low.
         with self._spi as spi:
-            spi.write(bytes([register, value & 0xFF]))
+            spi.write(bytes([register, value & 0xFF])) #pylint: disable=no-member
