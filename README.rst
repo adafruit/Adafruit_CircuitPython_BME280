@@ -38,7 +38,7 @@ install system-wide, use:
 
 .. code-block:: shell
 
-    pip3 install adafruit-circuitpython-bme280
+    sudo pip3 install adafruit-circuitpython-bme280
 
 To install in a virtual environment in your current project:
 
