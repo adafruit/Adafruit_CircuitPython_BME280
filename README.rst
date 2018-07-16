@@ -96,7 +96,7 @@ To build this library locally you'll need to install the
 
     python3 -m venv .env
     source .env/bin/activate
-    pip install circuitpython-build-tools
+    pip3 install circuitpython-build-tools
 
 Once installed, make sure you are in the virtual environment:
 
@@ -120,7 +120,7 @@ install dependencies (feel free to reuse the virtual environment from above):
 
     python3 -m venv .env
     source .env/bin/activate
-    pip install Sphinx sphinx-rtd-theme
+    pip3 install Sphinx sphinx-rtd-theme
 
 Now, once you have the virtual environment activated:
 
@@ -132,4 +132,3 @@ Now, once you have the virtual environment activated:
 This will output the documentation to ``docs/_build/html``. Open the index.html in your browser to
 view them. It will also (due to -W) error out on any warning like Travis will. This is a good way to
 locally verify it will pass.
-
