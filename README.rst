@@ -36,12 +36,14 @@ On the Raspberry Pi, you can install the driver locally
 `from PyPI <https://pypi.org/project/adafruit-circuitpython-bme280/>`_.  To
 install system-wide, use:
 
-..code-block:: shell
+.. code-block:: shell
+
     pip3 install adafruit-circuitpython-bme280
 
 To install in a virtual environment in your current project:
 
-..code-block:: shell
+.. code-block:: shell
+
     mkdir project-name && cd project-name
     python3 -m venv .env
     source .env/bin/activate
