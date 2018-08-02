@@ -1,8 +1,8 @@
 Introduction
 ============
 
-.. image:: https://readthedocs.org/projects/adafruit-circuitpython-BME280/badge/?version=latest
-    :target: https://circuitpython.readthedocs.io/projects/BME280/en/latest/
+.. image:: https://readthedocs.org/projects/adafruit-circuitpython-bme280/badge/?version=latest
+    :target: https://circuitpython.readthedocs.io/projects/bme280/en/latest/
     :alt: Documentation Status
 
 .. image :: https://img.shields.io/discord/327254708534116352.svg
