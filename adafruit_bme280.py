@@ -105,6 +105,18 @@ class Adafruit_BME280:
         #print("t_fine: ", self.t_fine)
 
     @property
+    def dew_point(self):
+        # pylint: disable=invalid-name
+        # Disable: c is a constant used in the Magnus formula
+        """The dew point in Celsius using the Magnus formula. Constants from Sontag, 1990."""
+        b = 17.62
+        c = 243.12
+        gamma = (b * self.temperature /(c + self.temperature)) + math.log(self.humidity / 100.0)
+        dewpoint = (c * gamma) / (b - gamma)
+        return dewpoint
+        # pylint: enable=invalid-name
+
+    @property
     def temperature(self):
         """The compensated temperature in degrees celsius."""
         self._read_temperature()
