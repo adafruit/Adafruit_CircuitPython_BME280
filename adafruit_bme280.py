@@ -198,7 +198,7 @@ class Adafruit_BME280:
         self._humidity_calib[1] = float(coeff[0])
         self._humidity_calib[2] = float(coeff[1])
         self._humidity_calib[3] = float((coeff[2] << 4) |  (coeff[3] & 0xF))
-        self._humidity_calib[4] = float(((coeff[3] & 0xF0) << 4) | coeff[4])
+        self._humidity_calib[4] = float((coeff[4] << 4) | (coeff[3] >> 4))
         self._humidity_calib[5] = float(coeff[5])
 
     def _read_byte(self, register):
