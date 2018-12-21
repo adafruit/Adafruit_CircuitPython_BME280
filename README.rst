@@ -9,8 +9,8 @@ Introduction
     :target: https://discord.gg/nBQh6qu
     :alt: Discord
 
-.. image:: https://travis-ci.org/adafruit/Adafruit_CircuitPython_BME280.svg?branch=master
-    :target: https://travis-ci.org/adafruit/Adafruit_CircuitPython_BME280
+.. image:: https://travis-ci.com/adafruit/Adafruit_CircuitPython_BME280.svg?branch=master
+    :target: https://travis-ci.com/adafruit/Adafruit_CircuitPython_BME280
     :alt: Build Status
 
 I2C and SPI driver for the Bosch BME280 Temperature, Humidity, and Barometric Pressure sensor
