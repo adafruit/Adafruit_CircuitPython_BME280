@@ -207,7 +207,7 @@ class Adafruit_BME280:
         return self._t_standby
 
     @standby_period.setter
-    def standy_period(self, value):
+    def standby_period(self, value):
         if not value in STANDBY:
             raise ValueError('Standby Period \'%s\' not supported' % (value))
         if self._t_standby == value:
