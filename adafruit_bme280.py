@@ -171,8 +171,8 @@ class Adafruit_BME280:
         return self._read_byte(_BME280_REGISTER_CONFIG)
 
     def _write_config(self):
-        normal_flag = False
         """Write the value to the config register in the device """
+        normal_flag = False
         if self._mode == MODE.NORMAL:
             #Writes to the config register may be ignored while in Normal mode
             normal_flag = True
