@@ -20,7 +20,7 @@
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 # THE SOFTWARE.
 """
-`adafruit_bme280` - Adafruit BME680 - Temperature, Humidity, Pressure & Gas Sensor
+`adafruit_bme280` - Adafruit BME280 - Temperature, Humidity & Barometic Pressure Sensor
 ====================================================================================
 
 CircuitPython driver from BME280 Temperature, Humidity and Barometic Pressure sensor
@@ -28,7 +28,8 @@ CircuitPython driver from BME280 Temperature, Humidity and Barometic Pressure se
 * Author(s): ladyada
 """
 import math
-import time
+from time import sleep
+from enum import Enum
 from micropython import const
 try:
     import struct
@@ -67,34 +68,77 @@ _BME280_PRESSURE_MAX_HPA = const(1100)
 _BME280_HUMIDITY_MIN = const(0)
 _BME280_HUMIDITY_MAX = const(100)
 
+class IIR_FILTER(Enum):
+    """Enum class for iir_filter values"""
+    DISABLE = 0
+    X_2 = 1
+    X_4 = 2
+    X_8 = 3
+    X_16 = 4
+
+class OVERSCAN(Enum):
+    """Enum class for overscan values for temperature, pressure, and humidity"""
+    DISABLE = 0
+    X_1 = 1
+    X_2 = 2
+    X_4 = 3
+    X_8 = 4
+    X_16 = 5
+
+class MODE(Enum):
+    """Enum class for mode values"""
+    SLEEP = 0
+    FORCE = 1
+    NORMAL = 3
+
+class STANDBY(Enum):
+    """
+    Enum class for standby values
+    TC_X[_Y] where X=milliseconds and Y=tenths of a millisecond
+    """
+    TC_0_5 = 0    #0.5ms
+    TC_10 = 6     #10ms
+    TC_20 = 7     #20ms
+    TC_62_5 = 1   #62.5ms
+    TC_125 = 2    #125ms
+    TC_250 = 3    #250ms
+    TC_500 = 4    #500ms
+    TC_1000 = 5   #1000ms
+
 class Adafruit_BME280:
     """Driver from BME280 Temperature, Humidity and Barometic Pressure sensor"""
     def __init__(self):
-        """Check the BME280 was found, read the coefficients and enable the sensor for continuous
-           reads"""
+        """Check the BME280 was found, read the coefficients and enable the sensor"""
         # Check device ID.
         chip_id = self._read_byte(_BME280_REGISTER_CHIPID)
         if _BME280_CHIPID != chip_id:
             raise RuntimeError('Failed to find BME280! Chip ID 0x%x' % chip_id)
-        self._write_register_byte(_BME280_REGISTER_SOFTRESET, 0xB6)
-        time.sleep(0.5)
+        #Set some reasonable defaults.
+        self._iir_filter = IIR_FILTER.DISABLE
+        self._overscan_humidity = OVERSCAN.X_2
+        self._overscan_temperature = OVERSCAN.X_2
+        self._overscan_pressure = OVERSCAN.X_16
+        self._t_standby = STANDBY.TC_0_5
+        self._mode = MODE.SLEEP
+        self._reset()
         self._read_coefficients()
+        self._write_ctrl_meas()
+        self._write_config()
         self.sea_level_pressure = 1013.25
         """Pressure in hectoPascals at sea level. Used to calibrate `altitude`."""
-        # turn on humidity oversample 16x
-        self._write_register_byte(_BME280_REGISTER_CTRL_HUM, 0x03)
         self._t_fine = None
 
     def _read_temperature(self):
         # perform one measurement
-        self._write_register_byte(_BME280_REGISTER_CTRL_MEAS, 0xFE) # high res, forced mode
-
-        # Wait for conversion to complete
-        while self._read_byte(_BME280_REGISTER_STATUS) & 0x08:
-            time.sleep(0.002)
-        raw_temperature = self._read24(_BME280_REGISTER_TEMPDATA) / 16  # lowest 4 bits get dropped
+        if self.mode != MODE.NORMAL:
+            self.mode = MODE.FORCE
+            # Wait for conversion to complete
+            while self._get_status() & 0x08:
+                sleep(0.002)
+        raw_temperature = self._read24(_BME280_REGISTER_TEMPDATA) / 16 # lowest 4 bits get dropped
+        if raw_temperature == 0x80000:  #0x80000 means the measurment was skipped
+            return
         #print("raw temp: ", UT)
-
         var1 = (raw_temperature / 16384.0 - self._temp_calib[0] / 1024.0) * self._temp_calib[1]
         #print(var1)
         var2 = ((raw_temperature / 131072.0 - self._temp_calib[0] / 8192.0) * (
@@ -104,6 +148,150 @@ class Adafruit_BME280:
         self._t_fine = int(var1 + var2)
         #print("t_fine: ", self.t_fine)
 
+    def _reset(self):
+        """Soft reset the sensor"""
+        self._write_register_byte(_BME280_REGISTER_SOFTRESET, 0xB6)
+        sleep(0.004)  #Datasheet says 2ms.  Using 4ms just to be safe
+
+    def _write_ctrl_meas(self):
+        """
+        Write the values to the ctrl_meas and ctrl_hum registers in the device
+        ctrl_meas sets the pressure and temperature data acquistion options
+        ctrl_hum sets the humidty oversampling and must be written to first
+        """
+        self._write_register_byte(_BME280_REGISTER_CTRL_HUM, self.overscan_humidity)
+        self._write_register_byte(_BME280_REGISTER_CTRL_MEAS, self._ctrl_meas)
+
+    def _get_status(self):
+        """Get the value from the status register in the device """
+        return self._read_byte(_BME280_REGISTER_STATUS)
+
+    def _read_config(self):
+        """Read the value from the config register in the device """
+        return self._read_byte(_BME280_REGISTER_CONFIG)
+
+    def _write_config(self):
+        """Write the value to the config register in the device """
+        if self._mode == MODE.NORMAL:
+            #Writes to the config register may be ignored while in Normal mode
+            normal_flag = True
+            self.mode = MODE.SLEEP #So we switch to Sleep mode first
+        self._write_register_byte(_BME280_REGISTER_CONFIG, self._config)
+        if normal_flag:
+            self.mode = MODE.NORMAL
+
+    @property
+    def mode(self):
+        """
+        Operation mode
+        Allowed values are set in the MODE enum class
+        """
+        return self._mode
+
+    @mode.setter
+    def mode(self, value):
+        if not value in MODE:
+            raise ValueError('Mode \'%s\' not supported' % (value))
+        if self._mode == value:
+            return
+        self._mode = value
+        self._write_ctrl_meas()
+
+    @property
+    def standby_period(self):
+        """
+        Control the inactive period when in Normal mode
+        Allowed standby periods are set the STANDBY enum class
+        """
+        return self._t_standby
+
+    @standby_period.setter
+    def standy_period(self, value):
+        if not value in STANDBY:
+            raise ValueError('Standby Period \'%s\' not supported' % (value))
+        if self._t_standby == value:
+            return
+        self._t_standby = value
+        self._write_config()
+
+    @property
+    def overscan_humidity(self):
+        """Humidity Oversampling
+           Allowed values are set in the OVERSCAN enum class """
+        return self._overscan_humidity
+
+    @overscan_humidity.setter
+    def overscan_humidity(self, value):
+        if not value in OVERSCAN:
+            raise ValueError('Overscan value \'%s\' not supported' % (value))
+        self._overscan_humidity = value
+        self._write_ctrl_meas()
+
+    @property
+    def overscan_temperature(self):
+        """
+        Temperature Oversampling
+        Allowed values are set in the OVERSCAN enum class
+        """
+        return self._overscan_humidity
+
+    @overscan_temperature.setter
+    def overscan_temperature(self, value):
+        if not value in OVERSCAN:
+            raise ValueError('Overscan value \'%s\' not supported' % (value))
+        self._overscan_temperature = value
+        self._write_ctrl_meas()
+
+    @property
+    def overscan_pressure(self):
+        """
+        Pressure Oversampling
+        Allowed values are set in the OVERSCAN enum class
+        """
+        return self._overscan_pressure
+
+    @overscan_pressure.setter
+    def overscan_pressure(self, value):
+        if not value in OVERSCAN:
+            raise ValueError('Overscan value \'%s\' not supported' % (value))
+        self._overscan_pressure = value
+        self._write_ctrl_meas()
+
+    @property
+    def iir_filter(self):
+        """
+        Controls the time constant of the IIR filter
+        Allowed values are set in the IIR_FILTER enum class
+        """
+        return self._iir_filter
+
+    @iir_filter.setter
+    def iir_filter(self, value):
+        if not value in IIR_FILTER:
+            raise ValueError('IIR Filter \'%s\' not supported' % (value))
+        self._iir_filter = value
+        self._write_config()
+
+    @property
+    def _config(self):
+        """Value to be written to the device's config register """
+        config = 0
+        if self.mode == MODE.NORMAL:
+            config += (self._t_standby << 5)
+        if self._iir_filter:
+            config += (self._iir_filter.value << 2)
+        if isinstance(self, Adafruit_BME280_SPI):
+            config += 1     #enable SPI interface
+        return config
+
+    @property
+    def _ctrl_meas(self):
+        """Value to be written to the device's ctrl_meas register """
+        ctrl_meas = (self.overscan_temperature.value << 5)
+        ctrl_meas += (self.overscan_pressure.value << 2)
+        ctrl_meas += self.mode.value
+        return ctrl_meas
+
     @property
     def temperature(self):
         """The compensated temperature in degrees celsius."""
@@ -112,12 +300,17 @@ class Adafruit_BME280:
 
     @property
     def pressure(self):
-        """The compensated pressure in hectoPascals."""
+        """
+        The compensated pressure in hectoPascals.
+        returns None if pressure measurement is disabled
+        """
         self._read_temperature()
 
         # Algorithm from the BME280 driver
         # https://github.com/BoschSensortec/BME280_driver/blob/master/bme280.c
         adc = self._read24(_BME280_REGISTER_PRESSUREDATA) / 16  # lowest 4 bits get dropped
+        if adc == 0x80000:  #0x80000 means the measurement was skipped
+            return None
         var1 = float(self._t_fine) / 2.0 - 64000.0
         var2 = var1 * var1 * self._pressure_calib[5] / 32768.0
         var2 = var2 + var1 * self._pressure_calib[4] * 2.0
@@ -145,9 +338,14 @@ class Adafruit_BME280:
 
     @property
     def humidity(self):
-        """The relative humidity in RH %"""
+        """
+        The relative humidity in RH %
+        returns None if humidity measurement is disabled
+        """
         self._read_temperature()
         hum = self._read_register(_BME280_REGISTER_HUMIDDATA, 2)
+        if hum == 0x8000:   #0x8000 means the reading was skipped
+            return None
         #print("Humidity data: ", hum)
         adc = float(hum[0] << 8 | hum[1])
         #print("adc:", adc)
