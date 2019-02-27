@@ -233,7 +233,7 @@ class Adafruit_BME280:
         Temperature Oversampling
         Allowed values are set in the OVERSCAN enum class
         """
-        return self._overscan_humidity
+        return self._overscan_temperature
 
     @overscan_temperature.setter
     def overscan_temperature(self, value):
