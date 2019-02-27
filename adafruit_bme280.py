@@ -21,7 +21,7 @@
 # THE SOFTWARE.
 """
 `adafruit_bme280` - Adafruit BME280 - Temperature, Humidity & Barometic Pressure Sensor
-====================================================================================
+=========================================================================================
 
 CircuitPython driver from BME280 Temperature, Humidity and Barometic Pressure sensor
 
