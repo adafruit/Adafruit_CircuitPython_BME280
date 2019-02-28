@@ -107,6 +107,7 @@ class STANDBY(Enum):
 
 class Adafruit_BME280:
     """Driver from BME280 Temperature, Humidity and Barometic Pressure sensor"""
+    # pylint: disable=too-many-instance-attributes
     def __init__(self):
         """Check the BME280 was found, read the coefficients and enable the sensor"""
         # Check device ID.
