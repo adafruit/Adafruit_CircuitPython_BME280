@@ -29,7 +29,6 @@ CircuitPython driver from BME280 Temperature, Humidity and Barometic Pressure se
 """
 import math
 from time import sleep
-from enum import Enum
 from micropython import const
 try:
     import struct
@@ -68,42 +67,49 @@ _BME280_PRESSURE_MAX_HPA = const(1100)
 _BME280_HUMIDITY_MIN = const(0)
 _BME280_HUMIDITY_MAX = const(100)
 
-class IIR_FILTER(Enum):
-    """Enum class for iir_filter values"""
-    DISABLE = 0
-    X_2 = 1
-    X_4 = 2
-    X_8 = 3
-    X_16 = 4
+"""iir_filter values"""
+IIR_FILTER_DISABLE = const(0)
+IIR_FILTER_X2 = const(0x01)
+IIR_FILTER_X4 = const(0x02)
+IIR_FILTER_X8 = const(0x03)
+IIR_FILTER_X16 = const(0x04)
 
-class OVERSCAN(Enum):
-    """Enum class for overscan values for temperature, pressure, and humidity"""
-    DISABLE = 0
-    X_1 = 1
-    X_2 = 2
-    X_4 = 3
-    X_8 = 4
-    X_16 = 5
+_BME280_IIR_FILTERS = frozenset((IIR_FILTER_DISABLE, IIR_FILTER_X2,
+                                 IIR_FILTER_X4, IIR_FILTER_X8, IIR_FILTER_X16))
 
-class MODE(Enum):
-    """Enum class for mode values"""
-    SLEEP = 0
-    FORCE = 1
-    NORMAL = 3
+"""overscan values for temperature, pressure, and humidity"""
+OVERSCAN_DISABLE = const(0x00)
+OVERSCAN_X1 = const(0x01)
+OVERSCAN_X2 = const(0x02)
+OVERSCAN_X4 = const(0x03)
+OVERSCAN_X8 = const(0x04)
+OVERSCAN_X16 = const(0x05)
 
-class STANDBY(Enum):
-    """
-    Enum class for standby values
-    TC_X[_Y] where X=milliseconds and Y=tenths of a millisecond
-    """
-    TC_0_5 = 0    #0.5ms
-    TC_10 = 6     #10ms
-    TC_20 = 7     #20ms
-    TC_62_5 = 1   #62.5ms
-    TC_125 = 2    #125ms
-    TC_250 = 3    #250ms
-    TC_500 = 4    #500ms
-    TC_1000 = 5   #1000ms
+_BME280_OVERSCANS = frozenset((OVERSCAN_DISABLE, OVERSCAN_X1, OVERSCAN_X2,
+                               OVERSCAN_X4, OVERSCAN_X8, OVERSCAN_X16))
+
+"""mode values"""
+MODE_SLEEP = const(0x00)
+MODE_FORCE = const(0x01)
+MODE_NORMAL = const(0x03)
+
+_BME280_MODES = frozenset((MODE_SLEEP, MODE_FORCE, MODE_NORMAL))
+"""
+standby timeconstant values
+TC_X[_Y] where X=milliseconds and Y=tenths of a millisecond
+"""
+STANDBY_TC_0_5 = const(0x00)    #0.5ms
+STANDBY_TC_10 = const(0x06)     #10ms
+STANDBY_TC_20 = const(0x07)     #20ms
+STANDBY_TC_62_5 = const(0x01)   #62.5ms
+STANDBY_TC_125 = const(0x02)    #125ms
+STANDBY_TC_250 = const(0x03)    #250ms
+STANDBY_TC_500 = const(0x04)    #500ms
+STANDBY_TC_1000 = const(0x05)   #1000ms
+
+_BME280_STANDBY_TCS = frozenset((STANDBY_TC_0_5, STANDBY_TC_10, STANDBY_TC_20,
+                                 STANDBY_TC_62_5, STANDBY_TC_125, STANDBY_TC_250,
+                                 STANDBY_TC_500, STANDBY_TC_1000))
 
 class Adafruit_BME280:
     """Driver from BME280 Temperature, Humidity and Barometic Pressure sensor"""
@@ -115,12 +121,12 @@ class Adafruit_BME280:
         if _BME280_CHIPID != chip_id:
             raise RuntimeError('Failed to find BME280! Chip ID 0x%x' % chip_id)
         #Set some reasonable defaults.
-        self._iir_filter = IIR_FILTER.DISABLE
-        self._overscan_humidity = OVERSCAN.X_2
-        self._overscan_temperature = OVERSCAN.X_2
-        self._overscan_pressure = OVERSCAN.X_16
-        self._t_standby = STANDBY.TC_0_5
-        self._mode = MODE.SLEEP
+        self._iir_filter = IIR_FILTER_DISABLE
+        self._overscan_humidity = OVERSCAN_X1
+        self._overscan_temperature = OVERSCAN_X1
+        self._overscan_pressure = OVERSCAN_X16
+        self._t_standby = STANDBY_TC_125
+        self._mode = MODE_SLEEP
         self._reset()
         self._read_coefficients()
         self._write_ctrl_meas()
@@ -131,8 +137,8 @@ class Adafruit_BME280:
 
     def _read_temperature(self):
         # perform one measurement
-        if self.mode != MODE.NORMAL:
-            self.mode = MODE.FORCE
+        if self.mode != MODE_NORMAL:
+            self.mode = MODE_FORCE
             # Wait for conversion to complete
             while self._get_status() & 0x08:
                 sleep(0.002)
@@ -174,25 +180,25 @@ class Adafruit_BME280:
     def _write_config(self):
         """Write the value to the config register in the device """
         normal_flag = False
-        if self._mode == MODE.NORMAL:
+        if self._mode == MODE_NORMAL:
             #Writes to the config register may be ignored while in Normal mode
             normal_flag = True
-            self.mode = MODE.SLEEP #So we switch to Sleep mode first
+            self.mode = MODE_SLEEP #So we switch to Sleep mode first
         self._write_register_byte(_BME280_REGISTER_CONFIG, self._config)
         if normal_flag:
-            self.mode = MODE.NORMAL
+            self.mode = MODE_NORMAL
 
     @property
     def mode(self):
         """
         Operation mode
-        Allowed values are set in the MODE enum class
+        Allowed values are the constants MODE_*
         """
         return self._mode
 
     @mode.setter
     def mode(self, value):
-        if not value in MODE:
+        if not value in _BME280_MODES:
             raise ValueError('Mode \'%s\' not supported' % (value))
         if self._mode == value:
             return
@@ -203,13 +209,13 @@ class Adafruit_BME280:
     def standby_period(self):
         """
         Control the inactive period when in Normal mode
-        Allowed standby periods are set the STANDBY enum class
+        Allowed standby periods are the constants STANDBY_TC_*
         """
         return self._t_standby
 
     @standby_period.setter
     def standby_period(self, value):
-        if not value in STANDBY:
+        if not value in _BME280_STANDBY_TCS:
             raise ValueError('Standby Period \'%s\' not supported' % (value))
         if self._t_standby == value:
             return
@@ -218,13 +224,15 @@ class Adafruit_BME280:
 
     @property
     def overscan_humidity(self):
-        """Humidity Oversampling
-           Allowed values are set in the OVERSCAN enum class """
+        """
+        Humidity Oversampling
+        Allowed values are the constants OVERSCAN_*
+        """
         return self._overscan_humidity
 
     @overscan_humidity.setter
     def overscan_humidity(self, value):
-        if not value in OVERSCAN:
+        if not value in _BME280_OVERSCANS:
             raise ValueError('Overscan value \'%s\' not supported' % (value))
         self._overscan_humidity = value
         self._write_ctrl_meas()
@@ -233,13 +241,13 @@ class Adafruit_BME280:
     def overscan_temperature(self):
         """
         Temperature Oversampling
-        Allowed values are set in the OVERSCAN enum class
+        Allowed values are the constants OVERSCAN_*
         """
         return self._overscan_temperature
 
     @overscan_temperature.setter
     def overscan_temperature(self, value):
-        if not value in OVERSCAN:
+        if not value in _BME280_OVERSCANS:
             raise ValueError('Overscan value \'%s\' not supported' % (value))
         self._overscan_temperature = value
         self._write_ctrl_meas()
@@ -248,13 +256,13 @@ class Adafruit_BME280:
     def overscan_pressure(self):
         """
         Pressure Oversampling
-        Allowed values are set in the OVERSCAN enum class
+        Allowed values are the constants OVERSCAN_*
         """
         return self._overscan_pressure
 
     @overscan_pressure.setter
     def overscan_pressure(self, value):
-        if not value in OVERSCAN:
+        if not value in _BME280_OVERSCANS:
             raise ValueError('Overscan value \'%s\' not supported' % (value))
         self._overscan_pressure = value
         self._write_ctrl_meas()
@@ -263,13 +271,13 @@ class Adafruit_BME280:
     def iir_filter(self):
         """
         Controls the time constant of the IIR filter
-        Allowed values are set in the IIR_FILTER enum class
+        Allowed values are the constants IIR_FILTER_*
         """
         return self._iir_filter
 
     @iir_filter.setter
     def iir_filter(self, value):
-        if not value in IIR_FILTER:
+        if not value in _BME280_IIR_FILTERS:
             raise ValueError('IIR Filter \'%s\' not supported' % (value))
         self._iir_filter = value
         self._write_config()
@@ -278,10 +286,10 @@ class Adafruit_BME280:
     def _config(self):
         """Value to be written to the device's config register """
         config = 0
-        if self.mode == MODE.NORMAL:
+        if self.mode == MODE_NORMAL:
             config += (self._t_standby << 5)
         if self._iir_filter:
-            config += (self._iir_filter.value << 2)
+            config += (self._iir_filter << 2)
         if isinstance(self, Adafruit_BME280_SPI):
             config += 1     #enable SPI interface
         return config
@@ -289,9 +297,9 @@ class Adafruit_BME280:
     @property
     def _ctrl_meas(self):
         """Value to be written to the device's ctrl_meas register """
-        ctrl_meas = (self.overscan_temperature.value << 5)
-        ctrl_meas += (self.overscan_pressure.value << 2)
-        ctrl_meas += self.mode.value
+        ctrl_meas = (self.overscan_temperature << 5)
+        ctrl_meas += (self.overscan_pressure << 2)
+        ctrl_meas += self.mode
         return ctrl_meas
 
     @property

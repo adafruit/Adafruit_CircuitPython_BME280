@@ -1,3 +1,8 @@
+"""
+Example showing how the BME280 library can be used to set the various
+parameters supported by the sensor.
+Refer to the BME280 datasheet to understand what these parameters do
+"""
 import time
 
 import board
@@ -15,13 +20,12 @@ bme280 = adafruit_bme280.Adafruit_BME280_I2C(i2c)
 
 # change this to match the location's pressure (hPa) at sea level
 bme280.sea_level_pressure = 1013.25
-#refer to the BMP280 datasheet to understand what these do
-bme280.mode = adafruit_bme280.MODE.NORMAL
-bme280.standby_period = adafruit_bme280.STANDBY.TC_500
-bme280.iir_filter = adafruit_bme280.IIR_FILTER.X_16
-bme280.overscan_pressure = adafruit_bme280.OVERSCAN.X_16
-bme280.overscan_humidity = adafruit_bme280.OVERSCAN.X_1
-bme280.overscan_temperature = adafruit_bme280.OVERSCAN.X_2
+bme280.mode = adafruit_bme280.MODE_NORMAL
+bme280.standby_period = adafruit_bme280.STANDBY_TC_500
+bme280.iir_filter = adafruit_bme280.IIR_FILTER_X16
+bme280.overscan_pressure = adafruit_bme280.OVERSCAN_X16
+bme280.overscan_humidity = adafruit_bme280.OVERSCAN_X1
+bme280.overscan_temperature = adafruit_bme280.OVERSCAN_X2
 #The sensor will need a moment to gather inital readings
 time.sleep(1)
 
