@@ -19,11 +19,11 @@ bme280.sea_level_pressure = 1013.25
 bme280.mode = adafruit_bme280.MODE.NORMAL
 bme280.standby_period = adafruit_bme280.STANDBY.TC_500
 bme280.iir_filter = adafruit_bme280.IIR_FILTER.X_16
-bme_280.overscan_pressure = adafruit_bme280.OVERSCAN.X_16
-bme_280.overscan_humidity = adafruit_bme280.OVERSCAN.X_1
-bme_280.overscan_temperature = adafruit_bme280.OVERSCAN.X_2
+bme280.overscan_pressure = adafruit_bme280.OVERSCAN.X_16
+bme280.overscan_humidity = adafruit_bme280.OVERSCAN.X_1
+bme280.overscan_temperature = adafruit_bme280.OVERSCAN.X_2
 #The sensor will need a moment to gather inital readings
-sleep(1)
+time.sleep(1)
 
 while True:
     print("\nTemperature: %0.1f C" % bme280.temperature)
