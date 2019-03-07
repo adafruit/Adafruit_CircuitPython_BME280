@@ -85,8 +85,8 @@ OVERSCAN_X4 = const(0x03)
 OVERSCAN_X8 = const(0x04)
 OVERSCAN_X16 = const(0x05)
 
-_BME280_OVERSCANS = frozenset((OVERSCAN_DISABLE, OVERSCAN_X1, OVERSCAN_X2,
-                               OVERSCAN_X4, OVERSCAN_X8, OVERSCAN_X16))
+_BME280_OVERSCANS = {OVERSCAN_DISABLE:0, OVERSCAN_X1:1, OVERSCAN_X2:2,
+                     OVERSCAN_X4:4, OVERSCAN_X8:8, OVERSCAN_X16:16}
 
 """mode values"""
 MODE_SLEEP = const(0x00)
@@ -299,6 +299,30 @@ class Adafruit_BME280:
         ctrl_meas += (self.overscan_pressure << 2)
         ctrl_meas += self.mode
         return ctrl_meas
+
+    @property
+    def measurement_time_typical(self):
+        """Typical time in milliseconds required to complete a measurement in normal mode"""
+        meas_time_ms = 1.0
+        if self.overscan_temperature != OVERSCAN_DISABLE:
+            meas_time_ms += (2 * _BME280_OVERSCANS.get(self.overscan_temperature))
+        if self.overscan_pressure != OVERSCAN_DISABLE:
+            meas_time_ms += (2 * _BME280_OVERSCANS.get(self.overscan_pressure) + 0.5)
+        if self.overscan_humidity != OVERSCAN_DISABLE:
+            meas_time_ms += (2 * _BME280_OVERSCANS.get(self.overscan_humidity) + 0.5)
+        return meas_time_ms
+
+    @property
+    def measurement_time_max(self):
+        """Maximum time in milliseconds required to complete a measurement in normal mode"""
+        meas_time_ms = 1.25
+        if self.overscan_temperature != OVERSCAN_DISABLE:
+            meas_time_ms += (2.3 * _BME280_OVERSCANS.get(self.overscan_temperature))
+        if self.overscan_pressure != OVERSCAN_DISABLE:
+            meas_time_ms += (2.3 * _BME280_OVERSCANS.get(self.overscan_pressure) + 0.575)
+        if self.overscan_humidity != OVERSCAN_DISABLE:
+            meas_time_ms += (2.3 * _BME280_OVERSCANS.get(self.overscan_humidity) + 0.575)
+        return meas_time_ms
 
     @property
     def temperature(self):
