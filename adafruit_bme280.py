@@ -143,8 +143,6 @@ class Adafruit_BME280:
             while self._get_status() & 0x08:
                 sleep(0.002)
         raw_temperature = self._read24(_BME280_REGISTER_TEMPDATA) / 16 # lowest 4 bits get dropped
-        if raw_temperature == 0x80000:  #0x80000 means the measurment was skipped
-            return
         #print("raw temp: ", UT)
         var1 = (raw_temperature / 16384.0 - self._temp_calib[0] / 1024.0) * self._temp_calib[1]
         #print(var1)
@@ -319,8 +317,6 @@ class Adafruit_BME280:
         # Algorithm from the BME280 driver
         # https://github.com/BoschSensortec/BME280_driver/blob/master/bme280.c
         adc = self._read24(_BME280_REGISTER_PRESSUREDATA) / 16  # lowest 4 bits get dropped
-        if adc == 0x80000:  #0x80000 means the measurement was skipped
-            return None
         var1 = float(self._t_fine) / 2.0 - 64000.0
         var2 = var1 * var1 * self._pressure_calib[5] / 32768.0
         var2 = var2 + var1 * self._pressure_calib[4] * 2.0
@@ -354,8 +350,6 @@ class Adafruit_BME280:
         """
         self._read_temperature()
         hum = self._read_register(_BME280_REGISTER_HUMIDDATA, 2)
-        if hum == 0x8000:   #0x8000 means the reading was skipped
-            return None
         #print("Humidity data: ", hum)
         adc = float(hum[0] << 8 | hum[1])
         #print("adc:", adc)
