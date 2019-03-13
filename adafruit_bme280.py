@@ -286,8 +286,6 @@ class Adafruit_BME280:
             config += (self._t_standby << 5)
         if self._iir_filter:
             config += (self._iir_filter << 2)
-        if isinstance(self, Adafruit_BME280_SPI):
-            config += 1     #enable SPI interface
         return config
 
     @property
