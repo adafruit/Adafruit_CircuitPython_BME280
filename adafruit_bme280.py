@@ -198,8 +198,6 @@ class Adafruit_BME280:
     def mode(self, value):
         if not value in _BME280_MODES:
             raise ValueError('Mode \'%s\' not supported' % (value))
-        if self._mode == value:
-            return
         self._mode = value
         self._write_ctrl_meas()
 
