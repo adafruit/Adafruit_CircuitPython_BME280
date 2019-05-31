@@ -74,8 +74,8 @@ IIR_FILTER_X4 = const(0x02)
 IIR_FILTER_X8 = const(0x03)
 IIR_FILTER_X16 = const(0x04)
 
-_BME280_IIR_FILTERS = frozenset((IIR_FILTER_DISABLE, IIR_FILTER_X2,
-                                 IIR_FILTER_X4, IIR_FILTER_X8, IIR_FILTER_X16))
+_BME280_IIR_FILTERS = (IIR_FILTER_DISABLE, IIR_FILTER_X2,
+                       IIR_FILTER_X4, IIR_FILTER_X8, IIR_FILTER_X16)
 
 """overscan values for temperature, pressure, and humidity"""
 OVERSCAN_DISABLE = const(0x00)
@@ -93,7 +93,7 @@ MODE_SLEEP = const(0x00)
 MODE_FORCE = const(0x01)
 MODE_NORMAL = const(0x03)
 
-_BME280_MODES = frozenset((MODE_SLEEP, MODE_FORCE, MODE_NORMAL))
+_BME280_MODES = (MODE_SLEEP, MODE_FORCE, MODE_NORMAL)
 """
 standby timeconstant values
 TC_X[_Y] where X=milliseconds and Y=tenths of a millisecond
@@ -107,9 +107,9 @@ STANDBY_TC_250 = const(0x03)    #250ms
 STANDBY_TC_500 = const(0x04)    #500ms
 STANDBY_TC_1000 = const(0x05)   #1000ms
 
-_BME280_STANDBY_TCS = frozenset((STANDBY_TC_0_5, STANDBY_TC_10, STANDBY_TC_20,
-                                 STANDBY_TC_62_5, STANDBY_TC_125, STANDBY_TC_250,
-                                 STANDBY_TC_500, STANDBY_TC_1000))
+_BME280_STANDBY_TCS = (STANDBY_TC_0_5, STANDBY_TC_10, STANDBY_TC_20,
+                       STANDBY_TC_62_5, STANDBY_TC_125, STANDBY_TC_250,
+                       STANDBY_TC_500, STANDBY_TC_1000)
 
 class Adafruit_BME280:
     """Driver from BME280 Temperature, Humidity and Barometic Pressure sensor"""
@@ -344,23 +344,20 @@ class Adafruit_BME280:
         var3 = self._pressure_calib[2] * var1 * var1 / 524288.0
         var1 = (var3 + self._pressure_calib[1] * var1) / 524288.0
         var1 = (1.0 + var1 / 32768.0) * self._pressure_calib[0]
-        if var1 == 0:
+        if var1 == 0: # avoid exception caused by division by zero (as per Arduino lib)
             return 0
-        if var1:
-            pressure = 1048576.0 - adc
-            pressure = ((pressure - var2 / 4096.0) * 6250.0) / var1
-            var1 = self._pressure_calib[8] * pressure * pressure / 2147483648.0
-            var2 = pressure * self._pressure_calib[7] / 32768.0
-            pressure = pressure + (var1 + var2 + self._pressure_calib[6]) / 16.0
+        pressure = 1048576.0 - adc
+        pressure = ((pressure - var2 / 4096.0) * 6250.0) / var1
+        var1 = self._pressure_calib[8] * pressure * pressure / 2147483648.0
+        var2 = pressure * self._pressure_calib[7] / 32768.0
+        pressure = pressure + (var1 + var2 + self._pressure_calib[6]) / 16.0
 
-            pressure /= 100
-            if pressure < _BME280_PRESSURE_MIN_HPA:
-                return _BME280_PRESSURE_MIN_HPA
-            if pressure > _BME280_PRESSURE_MAX_HPA:
-                return _BME280_PRESSURE_MAX_HPA
-            return pressure
-        else:
+        pressure /= 100
+        if pressure < _BME280_PRESSURE_MIN_HPA:
             return _BME280_PRESSURE_MIN_HPA
+        if pressure > _BME280_PRESSURE_MAX_HPA:
+            return _BME280_PRESSURE_MAX_HPA
+        return pressure
 
     @property
     def humidity(self):
