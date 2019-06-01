@@ -414,7 +414,7 @@ reading the calibration registers")
         self._humidity_calib = [0]*6
         self._humidity_calib[0] = self._read_byte(_BME280_REGISTER_DIG_H1)
         coeff = self._read_register(_BME280_REGISTER_DIG_H2, 7)
-        coeff = list(struct.unpack('<hBBBBb', bytes(coeff)))
+        coeff = list(struct.unpack('<hBbBbb', bytes(coeff)))
         self._humidity_calib[1] = float(coeff[0])
         self._humidity_calib[2] = float(coeff[1])
         self._humidity_calib[3] = float((coeff[2] << 4) |  (coeff[3] & 0xF))
