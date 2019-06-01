@@ -1,6 +1,7 @@
 __pycache__
 _build
 *.pyc
+*.mpy
 .env
 build*
 bundles
