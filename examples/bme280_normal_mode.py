@@ -18,7 +18,7 @@ bme280 = adafruit_bme280.Adafruit_BME280_I2C(i2c)
 #bme_cs = digitalio.DigitalInOut(board.D10)
 #bme280 = adafruit_bme280.Adafruit_BME280_SPI(spi, bme_cs)
 
-# change this to match the location's pressure (hPa) at sea level
+# Change this to match the location's pressure (hPa) at sea level
 bme280.sea_level_pressure = 1013.25
 bme280.mode = adafruit_bme280.MODE_NORMAL
 bme280.standby_period = adafruit_bme280.STANDBY_TC_500
@@ -26,7 +26,7 @@ bme280.iir_filter = adafruit_bme280.IIR_FILTER_X16
 bme280.overscan_pressure = adafruit_bme280.OVERSCAN_X16
 bme280.overscan_humidity = adafruit_bme280.OVERSCAN_X1
 bme280.overscan_temperature = adafruit_bme280.OVERSCAN_X2
-#The sensor will need a moment to gather inital readings
+# The sensor will need a moment to gather initial readings
 time.sleep(1)
 
 while True:
