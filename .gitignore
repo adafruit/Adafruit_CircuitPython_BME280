@@ -3,5 +3,4 @@ _build
 *.pyc
 *.mpy
 .env
-build*
 bundles
