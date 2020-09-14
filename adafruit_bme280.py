@@ -392,6 +392,14 @@ reading the calibration registers"
         return pressure
 
     @property
+    def relative_humidity(self):
+        """
+        The relative humidity in RH %
+        returns None if humidity measurement is disabled
+        """
+        return self.humidity
+
+    @property
     def humidity(self):
         """
         The relative humidity in RH %
