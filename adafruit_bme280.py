@@ -46,8 +46,6 @@ _BME280_REGISTER_PRESSUREDATA = const(0xF7)
 _BME280_REGISTER_TEMPDATA = const(0xFA)
 _BME280_REGISTER_HUMIDDATA = const(0xFD)
 
-_BME280_PRESSURE_MIN_HPA = const(300)
-_BME280_PRESSURE_MAX_HPA = const(1100)
 _BME280_HUMIDITY_MIN = const(0)
 _BME280_HUMIDITY_MAX = const(100)
 
@@ -368,10 +366,6 @@ reading the calibration registers"
         pressure = pressure + (var1 + var2 + self._pressure_calib[6]) / 16.0
 
         pressure /= 100
-        if pressure < _BME280_PRESSURE_MIN_HPA:
-            return _BME280_PRESSURE_MIN_HPA
-        if pressure > _BME280_PRESSURE_MAX_HPA:
-            return _BME280_PRESSURE_MAX_HPA
         return pressure
 
     @property
