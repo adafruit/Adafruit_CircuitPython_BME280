@@ -138,6 +138,9 @@ class Adafruit_BME280:
         self._t_fine = None
 
     def _read_temperature(self):
+        """Private function to read the temperature
+        :return: None
+        """
         # perform one measurement
         if self.mode != MODE_NORMAL:
             self.mode = MODE_FORCE
@@ -459,15 +462,28 @@ reading the calibration registers"
 
 
 class Adafruit_BME280_I2C(Adafruit_BME280):
-    """Driver for BME280 connected over I2C"""
+    """Driver for BME280 connected over I2C
 
-    def __init__(self, i2c, address=_BME280_ADDRESS):
+    :param i2c: i2c object created with to use with BME280 sensor
+    :param int address: address of the BME280 sensor. Defaults to 0x77
+
+    """
+
+    def __init__(self, i2c, address: int = _BME280_ADDRESS) -> None:
         import adafruit_bus_device.i2c_device as i2c_device  # pylint: disable=import-outside-toplevel
 
         self._i2c = i2c_device.I2CDevice(i2c, address)
         super().__init__()
 
     def _read_register(self, register, length):
+        """Private function to read a register with a provided length
+
+        :param register: register to read from
+        :param length: length in bytes to read
+        :return: bytearray with register information
+        :rtype: bytearray
+
+        """
         with self._i2c as i2c:
             i2c.write(bytes([register & 0xFF]))
             result = bytearray(length)
@@ -476,21 +492,41 @@ class Adafruit_BME280_I2C(Adafruit_BME280):
             return result
 
     def _write_register_byte(self, register, value):
+        """Private function to write on a register with a provided value
+
+        :param register: register to write to
+        :param value: value to write on the selected register
+        :return: None
+
+        """
         with self._i2c as i2c:
             i2c.write(bytes([register & 0xFF, value & 0xFF]))
             # print("$%02X <= 0x%02X" % (register, value))
 
 
 class Adafruit_BME280_SPI(Adafruit_BME280):
-    """Driver for BME280 connected over SPI"""
+    """Driver for BME280 connected over SPI
 
-    def __init__(self, spi, cs, baudrate=100000):
+    :param spi: spi object created with to use with BME280 sensor
+    :param ~microcontroller.Pin cs: pin used for cs
+    :param int baudrate: the desired clock rate in Hertz of the spi. Defaults to 100000
+
+    """
+
+    def __init__(self, spi, cs, baudrate: int = 100000) -> None:
         import adafruit_bus_device.spi_device as spi_device  # pylint: disable=import-outside-toplevel
 
         self._spi = spi_device.SPIDevice(spi, cs, baudrate=baudrate)
         super().__init__()
 
-    def _read_register(self, register, length):
+    def _read_register(self, register: int, length: int) -> bytearray:
+        """Private function to read a register with a provided length
+
+        :param int register: register to read from
+        :param int length: length in bytes to read
+        :return bytearray: bytearray with register information
+
+        """
         register = (register | 0x80) & 0xFF  # Read single, bit 7 high.
         with self._spi as spi:
             spi.write(bytearray([register]))  # pylint: disable=no-member
@@ -499,7 +535,14 @@ class Adafruit_BME280_SPI(Adafruit_BME280):
             # print("$%02X => %s" % (register, [hex(i) for i in result]))
             return result
 
-    def _write_register_byte(self, register, value):
+    def _write_register_byte(self, register: int, value: int) -> None:
+        """Private function to write on a register with a provided value
+
+        :param register: register to write to
+        :param value: value to write on the selected register
+        :return: None
+
+        """
         register &= 0x7F  # Write, bit 7 low.
         with self._spi as spi:
             spi.write(bytes([register, value & 0xFF]))  # pylint: disable=no-member
