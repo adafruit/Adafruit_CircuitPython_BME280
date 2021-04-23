@@ -23,6 +23,8 @@ Table of Contents
 .. toctree::
     :caption: Tutorials
 
+    Adafruit BME280 I2C or SPI Temperature Humidity Pressure Sensor Learnng Guide <https://learn.adafruit.com/adafruit-bme280-humidity-barometric-pressure-temperature-sensor-breakout>
+
 .. toctree::
     :caption: Related Products
 
