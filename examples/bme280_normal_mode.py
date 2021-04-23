@@ -7,17 +7,15 @@ parameters supported by the sensor.
 Refer to the BME280 datasheet to understand what these parameters do
 """
 import time
-
 import board
-import busio
 import adafruit_bme280
 
 # Create library object using our Bus I2C port
-i2c = busio.I2C(board.SCL, board.SDA)
+i2c = board.I2C()  # uses board.SCL and board.SDA
 bme280 = adafruit_bme280.Adafruit_BME280_I2C(i2c)
 
 # OR create library object using our Bus SPI port
-# spi = busio.SPI(board.SCK, board.MOSI, board.MISO)
+# spi = board.SPI()
 # bme_cs = digitalio.DigitalInOut(board.D10)
 # bme280 = adafruit_bme280.Adafruit_BME280_SPI(spi, bme_cs)
 
