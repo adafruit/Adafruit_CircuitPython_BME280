@@ -16,15 +16,18 @@ Implementation Notes
 
 **Hardware:**
 
-* Adafruit `BME280 Temperature, Humidity and Barometric Pressure sensor
+* `Adafruit BME280 Temperature, Humidity and Barometric Pressure sensor
   <https://www.adafruit.com/product/2652>`_ (Product ID: 2652)
 
 
 **Software and Dependencies:**
 
 * Adafruit CircuitPython firmware for the supported boards:
-  https://github.com/adafruit/circuitpython/releases
-* Adafruit's Bus Device library: https://github.com/adafruit/Adafruit_CircuitPython_BusDevice
+  https://circuitpython.org/downloads
+
+* Adafruit's Bus Device library:
+  https://github.com/adafruit/Adafruit_CircuitPython_BusDevice
+
 """
 import math
 from time import sleep
@@ -564,7 +567,7 @@ class Adafruit_BME280_SPI(Adafruit_BME280):
         .. code-block:: python
 
             import board
-            from digitalio import DigitalInOut, Direction
+            from digitalio import DigitalInOut
             import adafruit_bme280
 
         Once this is done you can define your `board.SPI` object and define your sensor object
