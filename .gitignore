@@ -2,9 +2,17 @@
 #
 # SPDX-License-Identifier: Unlicense
 
+*.mpy
+.idea
 __pycache__
 _build
 *.pyc
-*.mpy
 .env
+.python-version
+build*/
 bundles
+*.DS_Store
+.eggs
+dist
+**/*.egg-info
+.vscode
