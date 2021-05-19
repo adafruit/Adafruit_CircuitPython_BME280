@@ -7,7 +7,7 @@ import busio
 import adafruit_bme280
 
 # Create sensor object, using the board's default I2C bus.
-i2c = busio.I2C(board.GP1, board.GP0) # SCL, SDA
+i2c = busio.I2C(board.GP1, board.GP0)  # SCL, SDA
 bme280 = adafruit_bme280.Adafruit_BME280_I2C(i2c)
 
 # OR create sensor object, using the board's default SPI bus.
