@@ -3,13 +3,13 @@
 # SPDX-License-Identifier: MIT
 
 """
-`adafruit_bme280`
+`adafruit_bme280.basic`
 =========================================================================================
 
 CircuitPython driver from BME280 Temperature, Humidity and Barometric
 Pressure sensor
 
-* Author(s): ladyada
+* Author(s): ladyada, Jose David M.
 
 Implementation Notes
 --------------------
@@ -44,65 +44,42 @@ __repo__ = "https://github.com/adafruit/Adafruit_CircuitPython_BME280.git"
 
 #    I2C ADDRESS/BITS/SETTINGS
 #    -----------------------------------------------------------------------
+
+"""General Information"""
 _BME280_ADDRESS = const(0x77)
 _BME280_CHIPID = const(0x60)
-
 _BME280_REGISTER_CHIPID = const(0xD0)
-_BME280_REGISTER_DIG_T1 = const(0x88)
-_BME280_REGISTER_DIG_H1 = const(0xA1)
-_BME280_REGISTER_DIG_H2 = const(0xE1)
-_BME280_REGISTER_DIG_H3 = const(0xE3)
-_BME280_REGISTER_DIG_H4 = const(0xE4)
-_BME280_REGISTER_DIG_H5 = const(0xE5)
-_BME280_REGISTER_DIG_H6 = const(0xE7)
-
+"""overscan values for temperature, pressure, and humidity"""
+OVERSCAN_X1 = const(0x01)
+OVERSCAN_X16 = const(0x05)
+"""mode values"""
+_BME280_MODES = (0x00, 0x01, 0x03)
+"""iir_filter values"""
+IIR_FILTER_DISABLE = const(0)
+"""
+standby timeconstant values
+TC_X[_Y] where X=milliseconds and Y=tenths of a millisecond
+"""
+STANDBY_TC_125 = const(0x02)  # 125ms
+"""mode values"""
+MODE_SLEEP = const(0x00)
+MODE_FORCE = const(0x01)
+MODE_NORMAL = const(0x03)
+"""Other Registers"""
 _BME280_REGISTER_SOFTRESET = const(0xE0)
 _BME280_REGISTER_CTRL_HUM = const(0xF2)
 _BME280_REGISTER_STATUS = const(0xF3)
 _BME280_REGISTER_CTRL_MEAS = const(0xF4)
 _BME280_REGISTER_CONFIG = const(0xF5)
-_BME280_REGISTER_PRESSUREDATA = const(0xF7)
 _BME280_REGISTER_TEMPDATA = const(0xFA)
 _BME280_REGISTER_HUMIDDATA = const(0xFD)
-
-_BME280_HUMIDITY_MIN = const(0)
-_BME280_HUMIDITY_MAX = const(100)
-
-"""iir_filter values"""
-IIR_FILTER_DISABLE = const(0)
-
-"""overscan values for temperature, pressure, and humidity"""
-OVERSCAN_DISABLE = const(0x00)
-OVERSCAN_X1 = const(0x01)
-OVERSCAN_X2 = const(0x02)
-OVERSCAN_X4 = const(0x03)
-OVERSCAN_X8 = const(0x04)
-OVERSCAN_X16 = const(0x05)
-
-_BME280_OVERSCANS = {
-    OVERSCAN_DISABLE: 0,
-    OVERSCAN_X1: 1,
-    OVERSCAN_X2: 2,
-    OVERSCAN_X4: 4,
-    OVERSCAN_X8: 8,
-    OVERSCAN_X16: 16,
-}
-
-"""mode values"""
-MODE_SLEEP = const(0x00)
-MODE_FORCE = const(0x01)
-MODE_NORMAL = const(0x03)
-
-_BME280_MODES = (MODE_SLEEP, MODE_FORCE, MODE_NORMAL)
-
-STANDBY_TC_125 = const(0x02)  # 125ms
 
 
 class Adafruit_BME280:
     """Driver from BME280 Temperature, Humidity and Barometric Pressure sensor
 
     .. note::
-        The operational range of the BMP280 is 300-1100 hPa.
+        The operational range of the BME280 is 300-1100 hPa.
         Pressure measurements outside this range may not be as accurate.
 
     """
@@ -116,8 +93,8 @@ class Adafruit_BME280:
             raise RuntimeError("Failed to find BME280! Chip ID 0x%x" % chip_id)
         # Set some reasonable defaults.
         self._iir_filter = IIR_FILTER_DISABLE
-        self.overscan_humidity = 1
-        self.overscan_temperature = 1
+        self.overscan_humidity = OVERSCAN_X1
+        self.overscan_temperature = OVERSCAN_X1
         self.overscan_pressure = OVERSCAN_X16
         self._t_standby = STANDBY_TC_125
         self._mode = MODE_SLEEP
@@ -139,19 +116,17 @@ class Adafruit_BME280:
         raw_temperature = (
             self._read24(_BME280_REGISTER_TEMPDATA) / 16
         )  # lowest 4 bits get dropped
-        # print("raw temp: ", UT)
+
         var1 = (
             raw_temperature / 16384.0 - self._temp_calib[0] / 1024.0
         ) * self._temp_calib[1]
-        # print(var1)
+
         var2 = (
             (raw_temperature / 131072.0 - self._temp_calib[0] / 8192.0)
             * (raw_temperature / 131072.0 - self._temp_calib[0] / 8192.0)
         ) * self._temp_calib[2]
-        # print(var2)
 
         self._t_fine = int(var1 + var2)
-        # print("t_fine: ", self.t_fine)
 
     def _reset(self):
         """Soft reset the sensor"""
@@ -164,7 +139,6 @@ class Adafruit_BME280:
         ctrl_meas sets the pressure and temperature data acquisition options
         ctrl_hum sets the humidity oversampling and must be written to first
         """
-
         self._write_register_byte(_BME280_REGISTER_CTRL_HUM, self.overscan_humidity)
         self._write_register_byte(_BME280_REGISTER_CTRL_MEAS, self._ctrl_meas)
 
@@ -178,8 +152,14 @@ class Adafruit_BME280:
 
     def _write_config(self):
         """Write the value to the config register in the device """
-
+        normal_flag = False
+        if self._mode == MODE_NORMAL:
+            # Writes to the config register may be ignored while in Normal mode
+            normal_flag = True
+            self.mode = MODE_SLEEP  # So we switch to Sleep mode first
         self._write_register_byte(_BME280_REGISTER_CONFIG, self._config)
+        if normal_flag:
+            self.mode = MODE_NORMAL
 
     @property
     def mode(self):
@@ -200,7 +180,7 @@ class Adafruit_BME280:
     def _config(self):
         """Value to be written to the device's config register """
         config = 0
-        if self.mode == MODE_NORMAL:
+        if self.mode == 0x03:  # MODE_NORMAL
             config += self._t_standby << 5
         if self._iir_filter:
             config += self._iir_filter << 2
@@ -231,7 +211,7 @@ class Adafruit_BME280:
         # Algorithm from the BME280 driver
         # https://github.com/BoschSensortec/BME280_driver/blob/master/bme280.c
         adc = (
-            self._read24(_BME280_REGISTER_PRESSUREDATA) / 16
+            self._read24(0xF7) / 16  # BME280_REGISTER_PRESSUREDATA
         )  # lowest 4 bits get dropped
         var1 = float(self._t_fine) / 2.0 - 64000.0
         var2 = var1 * var1 * self._pressure_calib[5] / 32768.0
@@ -268,7 +248,7 @@ class Adafruit_BME280:
         returns None if humidity measurement is disabled
         """
         self._read_temperature()
-        hum = self._read_register(_BME280_REGISTER_HUMIDDATA, 2)
+        hum = self._read_register(0xFD, 2)  # BME280_REGISTER_HUMIDDATA
         adc = float(hum[0] << 8 | hum[1])
 
         # Algorithm from the BME280 driver
@@ -284,31 +264,31 @@ class Adafruit_BME280:
         var6 = var3 * var4 * (var5 * var6)
         humidity = var6 * (1.0 - self._humidity_calib[0] * var6 / 524288.0)
 
-        if humidity > _BME280_HUMIDITY_MAX:
-            return _BME280_HUMIDITY_MAX
-        if humidity < _BME280_HUMIDITY_MIN:
-            return _BME280_HUMIDITY_MIN
+        if humidity > 100:
+            return 100
+        if humidity < 0:
+            return 0
         # else...
         return humidity
 
     @property
     def altitude(self):
-        """The altitude based on current ``pressure`` versus the sea level pressure
+        """The altitude based on current :attr:`pressure` versus the sea level pressure
         (``sea_level_pressure``) - which you must enter ahead of time)"""
         pressure = self.pressure  # in Si units for hPascal
         return 44330 * (1.0 - math.pow(pressure / self.sea_level_pressure, 0.1903))
 
     def _read_coefficients(self):
         """Read & save the calibration coefficients"""
-        coeff = self._read_register(_BME280_REGISTER_DIG_T1, 24)
+        coeff = self._read_register(0x88, 24)  # BME280_REGISTER_DIG_T1
         coeff = list(struct.unpack("<HhhHhhhhhhhh", bytes(coeff)))
         coeff = [float(i) for i in coeff]
         self._temp_calib = coeff[:3]
         self._pressure_calib = coeff[3:]
 
         self._humidity_calib = [0] * 6
-        self._humidity_calib[0] = self._read_byte(_BME280_REGISTER_DIG_H1)
-        coeff = self._read_register(_BME280_REGISTER_DIG_H2, 7)
+        self._humidity_calib[0] = self._read_byte(0xA1)  # BME280_REGISTER_DIG_H1
+        coeff = self._read_register(0xE1, 7)  # BME280_REGISTER_DIG_H2
         coeff = list(struct.unpack("<hBbBbb", bytes(coeff)))
         self._humidity_calib[1] = float(coeff[0])
         self._humidity_calib[2] = float(coeff[1])
@@ -336,7 +316,53 @@ class Adafruit_BME280:
 
 
 class Adafruit_BME280_I2C(Adafruit_BME280):
-    def __init__(self, i2c, address=_BME280_ADDRESS):
+
+    """Driver for BME280 connected over I2C
+
+    :param ~busio.I2C i2c: The I2C bus the BME280 is connected to.
+    :param int address: I2C device address. Defaults to :const:`0x77`.
+                        but another address can be passed in as an argument
+
+    .. note::
+        The operational range of the BMP280 is 300-1100 hPa.
+        Pressure measurements outside this range may not be as accurate.
+
+    **Quickstart: Importing and using the BME280**
+
+        Here is an example of using the :class:`Adafruit_BME280_I2C`.
+        First you will need to import the libraries to use the sensor
+
+        .. code-block:: python
+
+            import board
+            from adafruit_bme280 import basic
+
+        Once this is done you can define your `board.I2C` object and define your sensor object
+
+        .. code-block:: python
+
+            i2c = board.I2C()   # uses board.SCL and board.SDA
+            bme280 = basic.Adafruit_BME280_I2C(i2c)
+
+        You need to setup the pressure at sea level
+
+        .. code-block:: python
+
+            bme280.sea_level_pressure = 1013.25
+
+        Now you have access to the :attr:`temperature`, :attr:`relative_humidity`
+        :attr:`pressure` and :attr:`altitude` attributes
+
+        .. code-block:: python
+
+            temperature = bme280.temperature
+            relative_humidity = bme280.relative_humidity
+            pressure = bme280.pressure
+            altitude = bme280.altitude
+
+    """
+
+    def __init__(self, i2c, address=0x77):  # BME280_ADDRESS
         import adafruit_bus_device.i2c_device as i2c_device  # pylint: disable=import-outside-toplevel
 
         self._i2c = i2c_device.I2CDevice(i2c, address)
@@ -347,7 +373,6 @@ class Adafruit_BME280_I2C(Adafruit_BME280):
             i2c.write(bytes([register & 0xFF]))
             result = bytearray(length)
             i2c.readinto(result)
-            # print("$%02X => %s" % (register, [hex(i) for i in result]))
             return result
 
     def _write_register_byte(self, register, value):
@@ -357,6 +382,53 @@ class Adafruit_BME280_I2C(Adafruit_BME280):
 
 
 class Adafruit_BME280_SPI(Adafruit_BME280):
+
+    """Driver for BME280 connected over SPI
+
+    :param ~busio.SPI spi: SPI device
+    :param ~digitalio.DigitalInOut cs: Chip Select
+    :param int baudrate: Clock rate, default is 100000. Can be changed with :meth:`baudrate`
+
+    .. note::
+        The operational range of the BMP280 is 300-1100 hPa.
+        Pressure measurements outside this range may not be as accurate.
+
+    **Quickstart: Importing and using the BME280**
+
+        Here is an example of using the :class:`Adafruit_BME280_SPI` class.
+        First you will need to import the libraries to use the sensor
+
+        .. code-block:: python
+
+            import board
+            from digitalio import DigitalInOut
+            from adafruit_bme280 import basic
+
+        Once this is done you can define your `board.SPI` object and define your sensor object
+
+        .. code-block:: python
+
+            cs = digitalio.DigitalInOut(board.D10)
+            spi = board.SPI()
+            bme280 = basic.Adafruit_BME280_SPI(spi, cs)
+
+        You need to setup the pressure at sea level
+
+        .. code-block:: python
+
+            bme280.sea_level_pressure = 1013.25
+
+        Now you have access to the :attr:`temperature`, :attr:`relative_humidity`
+        :attr:`pressure` and :attr:`altitude` attributes
+
+        .. code-block:: python
+
+            temperature = bme280.temperature
+            relative_humidity = bme280.relative_humidity
+            pressure = bme280.pressure
+            altitude = bme280.altitude
+
+    """
 
     def __init__(self, spi, cs, baudrate=100000):
         import adafruit_bus_device.spi_device as spi_device  # pylint: disable=import-outside-toplevel
@@ -376,4 +448,3 @@ class Adafruit_BME280_SPI(Adafruit_BME280):
         register &= 0x7F  # Write, bit 7 low.
         with self._spi as spi:
             spi.write(bytes([register, value & 0xFF]))  # pylint: disable=no-member
-
