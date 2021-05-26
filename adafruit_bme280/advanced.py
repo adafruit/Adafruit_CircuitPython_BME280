@@ -123,7 +123,7 @@ _BME280_STANDBY_TCS = (
     STANDBY_TC_1000,
 )
 
-
+# pylint: disable=abstract-method
 class Adafruit_BME280_Advanced(Adafruit_BME280):
     """Driver from BME280 Temperature, Humidity and Barometric Pressure sensor
 
