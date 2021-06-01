@@ -8,7 +8,7 @@ Refer to the BME280 datasheet to understand what these parameters do
 """
 import time
 import board
-from adafruit_bme280 import advanced
+import adafruit_bme280.advanced as adafruit_bme280
 
 # Create sensor object, using the board's default I2C bus.
 i2c = board.I2C()  # uses board.SCL and board.SDA
