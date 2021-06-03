@@ -61,20 +61,11 @@ Usage Example
 
     import board
     import time
-    import adafruit_bme280
+    from adafruit_bme280 import basic
 
     # Create sensor object, using the board's default I2C bus.
     i2c = board.I2C()   # uses board.SCL and board.SDA
-    bme280 = adafruit_bme280.Adafruit_BME280_I2C(i2c)
-    #or with other sensor address
-    #bme280 = adafruit_bme280.Adafruit_BME280_I2C(i2c, address=0x76)
-
-    # OR create sensor object, using the board's default SPI bus.
-    # SPI setup
-    # from digitalio import DigitalInOut
-    #spi = board.SPI()
-    #bme_cs = digitalio.DigitalInOut(board.D10)
-    #bme280 = adafruit_bme280.Adafruit_BME280_SPI(spi, bme_cs)
+    bme280 = basic.Adafruit_BME280_I2C(i2c)
 
     # change this to match the location's pressure (hPa) at sea level
     bme280.sea_level_pressure = 1013.25
