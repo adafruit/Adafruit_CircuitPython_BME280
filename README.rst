@@ -71,12 +71,12 @@ Installing the BME280 library could have the following outcomes:
     * It installs successfully and your code fails to run with a memory allocation
       error. Try one of the following:
 
-        * If your :data:`code.py` is large, especially if it has lots of comments, you
-          can shrink it into a :data:`.mpy` file instead. See the Adafruit
+        * If your ``code.py`` is large, especially if it has lots of comments, you
+          can shrink it into a ``.mpy`` file instead. See the Adafruit
           `Learn Guide <https://learn.adafruit.com/Memory-saving-tips-for-CircuitPython/non-volatile-not-enough-disk-space>`_
           on shrinking your code.
         * Only use the basic BME280 implementation, and remove the following file:
-          :data:`<CIRCUITPY>/lib/adafruit_bme280/advanced.mpy` where <CIRCUITPY> is the
+          ``<CIRCUITPY>/lib/adafruit_bme280/advanced.mpy`` where <CIRCUITPY> is the
           mounted location of your device. Make sure that your code only uses the basic
           implementation.
 
