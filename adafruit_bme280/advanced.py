@@ -282,14 +282,14 @@ class Adafruit_BME280_I2C(Adafruit_BME280_Advanced):
         .. code-block:: python
 
             import board
-            from adafruit_bme280 import advanced
+            import adafruit_bme280.advanced as adafruit_bme280
 
         Once this is done you can define your `board.I2C` object and define your sensor object
 
         .. code-block:: python
 
             i2c = board.I2C()   # uses board.SCL and board.SDA
-            bme280 = advanced.Adafruit_BME280_I2C(i2c)
+            bme280 = adafruit_bme280.Adafruit_BME280_I2C(i2c)
 
         You need to setup the pressure at sea level
 
@@ -349,7 +349,7 @@ class Adafruit_BME280_SPI(Adafruit_BME280_Advanced):
 
             import board
             from digitalio import DigitalInOut
-            from adafruit_bme280 import advanced
+            import adafruit_bme280.advanced as adafruit_bme280
 
         Once this is done you can define your `board.SPI` object and define your sensor object
 
@@ -357,7 +357,7 @@ class Adafruit_BME280_SPI(Adafruit_BME280_Advanced):
 
             cs = digitalio.DigitalInOut(board.D10)
             spi = board.SPI()
-            bme280 = advanced.Adafruit_BME280_SPI(spi, cs)
+            bme280 = adafruit_bme280.Adafruit_BME280_SPI(spi, cs)
 
         You need to setup the pressure at sea level
 

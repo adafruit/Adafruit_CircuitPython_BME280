@@ -13,6 +13,10 @@ Introduction
     :target: https://github.com/adafruit/Adafruit_CircuitPython_BME280/actions/
     :alt: Build Status
 
+.. image:: https://img.shields.io/badge/code%20style-black-000000.svg
+    :target: https://github.com/psf/black
+    :alt: Code Style: Black
+
 I2C and SPI driver for the Bosch BME280 Temperature, Humidity, and Barometric Pressure sensor
 
 Installation and Dependencies
@@ -54,6 +58,29 @@ To install in a virtual environment in your current project:
     source .env/bin/activate
     pip3 install adafruit-circuitpython-bme280
 
+
+Installing to a connected CircuitPython Device
+==============================================
+Some devices, eg. the QT-PY, are very limited in memory. The BME280 library contains
+two variants - basic and advanced - which give different levels of functionality.
+
+Installing the BME280 library could have the following outcomes:
+
+    * It installs successfully and your code runs successfully. Woo-hoo! Continue with
+      your amazing project.
+    * It installs successfully and your code fails to run with a memory allocation
+      error. Try one of the following:
+
+        * If your :data:`code.py` is large, especially if it has lots of comments, you
+          can shrink it into a :data:`.mpy` file instead. See the Adafruit
+          `Learn Guide <https://learn.adafruit.com/Memory-saving-tips-for-CircuitPython/non-volatile-not-enough-disk-space>`_
+          on shrinking your code.
+        * Only use the basic BME280 implementation, and remove the following file:
+          :data:`<CIRCUITPY>/lib/adafruit_bme280/advanced.mpy` where <CIRCUITPY> is the
+          mounted location of your device. Make sure that your code only uses the basic
+          implementation.
+
+
 Usage Example
 =============
 
@@ -61,11 +88,11 @@ Usage Example
 
     import board
     import time
-    from adafruit_bme280 import basic
+    from adafruit_bme280 import basic as adafruit_bme280
 
     # Create sensor object, using the board's default I2C bus.
     i2c = board.I2C()   # uses board.SCL and board.SDA
-    bme280 = basic.Adafruit_BME280_I2C(i2c)
+    bme280 = adafruit_bme280.Adafruit_BME280_I2C(i2c)
 
     # change this to match the location's pressure (hPa) at sea level
     bme280.sea_level_pressure = 1013.25
