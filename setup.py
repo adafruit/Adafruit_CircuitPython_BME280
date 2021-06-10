@@ -52,5 +52,5 @@ setup(
     keywords="adafruit bme280 sensor hardware micropython circuitpython",
     # You can just specify the packages manually here if your project is
     # simple. Or you can use find_packages().
-    py_modules=["adafruit_bme280"],
+    packages=["adafruit_bme280"],
 )
