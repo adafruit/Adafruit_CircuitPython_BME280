@@ -104,6 +104,11 @@ Usage Example
         print("Altitude = %0.2f meters" % bme280.altitude)
         time.sleep(2)
 
+Documentation
+=============
+
+API documentation for this library can be found on `Read the Docs <https://circuitpython.readthedocs.io/projects/bme280/en/latest/>`_.
+
 Contributing
 ============
 
