@@ -310,7 +310,7 @@ class Adafruit_BME280_I2C(Adafruit_BME280_Advanced):
     """
 
     def __init__(self, i2c, address=_BME280_ADDRESS):
-        from adafruit_bus_device.i2c_device import (  # pylint: disable=import-outside-toplevel
+        from adafruit_bus_device import (  # pylint: disable=import-outside-toplevel
             i2c_device,
         )
 
@@ -380,7 +380,7 @@ class Adafruit_BME280_SPI(Adafruit_BME280_Advanced):
     """
 
     def __init__(self, spi, cs, baudrate=100000):
-        from adafruit_bus_device.spi_device import (  # pylint: disable=import-outside-toplevel
+        from adafruit_bus_device import (  # pylint: disable=import-outside-toplevel
             spi_device,
         )
 
