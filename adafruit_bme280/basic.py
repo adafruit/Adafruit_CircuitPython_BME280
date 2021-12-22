@@ -30,14 +30,10 @@ Implementation Notes
 
 """
 import math
+import struct
 from time import sleep
+
 from micropython import const
-
-try:
-    import struct
-except ImportError:
-    import ustruct as struct
-
 
 __version__ = "2.6.4"
 __repo__ = "https://github.com/adafruit/Adafruit_CircuitPython_BME280.git"
