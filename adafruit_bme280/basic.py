@@ -35,6 +35,13 @@ from time import sleep
 
 from micropython import const
 
+try:
+    from typing import Optional
+    from busio import I2C, SPI
+    from digitalio import DigitalInOut
+except ImportError:
+    pass
+
 __version__ = "2.6.4"
 __repo__ = "https://github.com/adafruit/Adafruit_CircuitPython_BME280.git"
 
@@ -81,7 +88,7 @@ class Adafruit_BME280:
     """
 
     # pylint: disable=too-many-instance-attributes
-    def __init__(self):
+    def __init__(self) -> None:
         """Check the BME280 was found, read the coefficients and enable the sensor"""
         # Check device ID.
         chip_id = self._read_byte(_BME280_REGISTER_CHIPID)
@@ -102,7 +109,7 @@ class Adafruit_BME280:
         """Pressure in hectoPascals at sea level. Used to calibrate `altitude`."""
         self._t_fine = None
 
-    def _read_temperature(self):
+    def _read_temperature(self) -> None:
         # perform one measurement
         if self.mode != MODE_NORMAL:
             self.mode = MODE_FORCE
@@ -124,12 +131,12 @@ class Adafruit_BME280:
 
         self._t_fine = int(var1 + var2)
 
-    def _reset(self):
+    def _reset(self) -> None:
         """Soft reset the sensor"""
         self._write_register_byte(_BME280_REGISTER_SOFTRESET, 0xB6)
         sleep(0.004)  # Datasheet says 2ms.  Using 4ms just to be safe
 
-    def _write_ctrl_meas(self):
+    def _write_ctrl_meas(self) -> None:
         """
         Write the values to the ctrl_meas and ctrl_hum registers in the device
         ctrl_meas sets the pressure and temperature data acquisition options
@@ -138,15 +145,15 @@ class Adafruit_BME280:
         self._write_register_byte(_BME280_REGISTER_CTRL_HUM, self.overscan_humidity)
         self._write_register_byte(_BME280_REGISTER_CTRL_MEAS, self._ctrl_meas)
 
-    def _get_status(self):
+    def _get_status(self) -> int:
         """Get the value from the status register in the device """
         return self._read_byte(_BME280_REGISTER_STATUS)
 
-    def _read_config(self):
+    def _read_config(self) -> int:
         """Read the value from the config register in the device """
         return self._read_byte(_BME280_REGISTER_CONFIG)
 
-    def _write_config(self):
+    def _write_config(self) -> None:
         """Write the value to the config register in the device """
         normal_flag = False
         if self._mode == MODE_NORMAL:
@@ -158,7 +165,7 @@ class Adafruit_BME280:
             self.mode = MODE_NORMAL
 
     @property
-    def mode(self):
+    def mode(self) -> int:
         """
         Operation mode
         Allowed values are the constants MODE_*
@@ -166,14 +173,14 @@ class Adafruit_BME280:
         return self._mode
 
     @mode.setter
-    def mode(self, value):
+    def mode(self, value: int) -> None:
         if not value in _BME280_MODES:
             raise ValueError("Mode '%s' not supported" % (value))
         self._mode = value
         self._write_ctrl_meas()
 
     @property
-    def _config(self):
+    def _config(self) -> int:
         """Value to be written to the device's config register """
         config = 0
         if self.mode == 0x03:  # MODE_NORMAL
@@ -183,7 +190,7 @@ class Adafruit_BME280:
         return config
 
     @property
-    def _ctrl_meas(self):
+    def _ctrl_meas(self) -> int:
         """Value to be written to the device's ctrl_meas register """
         ctrl_meas = self.overscan_temperature << 5
         ctrl_meas += self.overscan_pressure << 2
@@ -191,13 +198,13 @@ class Adafruit_BME280:
         return ctrl_meas
 
     @property
-    def temperature(self):
+    def temperature(self) -> float:
         """The compensated temperature in degrees Celsius."""
         self._read_temperature()
         return self._t_fine / 5120.0
 
     @property
-    def pressure(self):
+    def pressure(self) -> Optional[float]:
         """
         The compensated pressure in hectoPascals.
         returns None if pressure measurement is disabled
@@ -230,7 +237,7 @@ class Adafruit_BME280:
         return pressure
 
     @property
-    def relative_humidity(self):
+    def relative_humidity(self) -> Optional[float]:
         """
         The relative humidity in RH %
         returns None if humidity measurement is disabled
@@ -238,7 +245,7 @@ class Adafruit_BME280:
         return self.humidity
 
     @property
-    def humidity(self):
+    def humidity(self) -> Optional[float]:
         """
         The relative humidity in RH %
         returns None if humidity measurement is disabled
@@ -268,13 +275,13 @@ class Adafruit_BME280:
         return humidity
 
     @property
-    def altitude(self):
+    def altitude(self) -> float:
         """The altitude based on current :attr:`pressure` versus the sea level pressure
         (``sea_level_pressure``) - which you must enter ahead of time)"""
         pressure = self.pressure  # in Si units for hPascal
         return 44330 * (1.0 - math.pow(pressure / self.sea_level_pressure, 0.1903))
 
-    def _read_coefficients(self):
+    def _read_coefficients(self) -> None:
         """Read & save the calibration coefficients"""
         coeff = self._read_register(0x88, 24)  # BME280_REGISTER_DIG_T1
         coeff = list(struct.unpack("<HhhHhhhhhhhh", bytes(coeff)))
@@ -292,11 +299,11 @@ class Adafruit_BME280:
         self._humidity_calib[4] = float((coeff[4] << 4) | (coeff[3] >> 4))
         self._humidity_calib[5] = float(coeff[5])
 
-    def _read_byte(self, register):
+    def _read_byte(self, register: int) -> int:
         """Read a byte register value and return it"""
         return self._read_register(register, 1)[0]
 
-    def _read24(self, register):
+    def _read24(self, register: int) -> float:
         """Read an unsigned 24-bit value as a floating point and return it."""
         ret = 0.0
         for b in self._read_register(register, 3):
@@ -304,10 +311,10 @@ class Adafruit_BME280:
             ret += float(b & 0xFF)
         return ret
 
-    def _read_register(self, register, length):
+    def _read_register(self, register: int, length: int) -> bytearray:
         raise NotImplementedError()
 
-    def _write_register_byte(self, register, value):
+    def _write_register_byte(self, register: int, value: int) -> None:
         raise NotImplementedError()
 
 
@@ -358,7 +365,7 @@ class Adafruit_BME280_I2C(Adafruit_BME280):
 
     """
 
-    def __init__(self, i2c, address=0x77):  # BME280_ADDRESS
+    def __init__(self, i2c: I2C, address: int = 0x77) -> None:  # BME280_ADDRESS
         from adafruit_bus_device import (  # pylint: disable=import-outside-toplevel
             i2c_device,
         )
@@ -366,14 +373,14 @@ class Adafruit_BME280_I2C(Adafruit_BME280):
         self._i2c = i2c_device.I2CDevice(i2c, address)
         super().__init__()
 
-    def _read_register(self, register, length):
+    def _read_register(self, register: int, length: int) -> bytearray:
         with self._i2c as i2c:
             i2c.write(bytes([register & 0xFF]))
             result = bytearray(length)
             i2c.readinto(result)
             return result
 
-    def _write_register_byte(self, register, value):
+    def _write_register_byte(self, register: int, value: int) -> None:
         with self._i2c as i2c:
             i2c.write(bytes([register & 0xFF, value & 0xFF]))
             # print("$%02X <= 0x%02X" % (register, value))
@@ -428,7 +435,7 @@ class Adafruit_BME280_SPI(Adafruit_BME280):
 
     """
 
-    def __init__(self, spi, cs, baudrate=100000):
+    def __init__(self, spi: SPI, cs: DigitalInOut, baudrate: int = 100000) -> None:
         from adafruit_bus_device import (  # pylint: disable=import-outside-toplevel
             spi_device,
         )
@@ -436,7 +443,7 @@ class Adafruit_BME280_SPI(Adafruit_BME280):
         self._spi = spi_device.SPIDevice(spi, cs, baudrate=baudrate)
         super().__init__()
 
-    def _read_register(self, register, length):
+    def _read_register(self, register: int, length: int) -> bytearray:
         register = (register | 0x80) & 0xFF  # Read single, bit 7 high.
         with self._spi as spi:
             spi.write(bytearray([register]))  # pylint: disable=no-member
@@ -444,7 +451,7 @@ class Adafruit_BME280_SPI(Adafruit_BME280):
             spi.readinto(result)  # pylint: disable=no-member
             return result
 
-    def _write_register_byte(self, register, value):
+    def _write_register_byte(self, register: int, value: int) -> None:
         register &= 0x7F  # Write, bit 7 low.
         with self._spi as spi:
             spi.write(bytes([register, value & 0xFF]))  # pylint: disable=no-member
