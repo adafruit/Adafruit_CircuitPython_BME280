@@ -32,6 +32,13 @@ Implementation Notes
 from micropython import const
 from adafruit_bme280.basic import Adafruit_BME280
 
+try:
+    import typing  # pylint: disable=unused-import
+    from busio import I2C, SPI
+    from digitalio import DigitalInOut
+except ImportError:
+    pass
+
 __version__ = "0.0.0-auto.0"
 __repo__ = "https://github.com/adafruit/Adafruit_CircuitPython_BME280.git"
 
@@ -134,7 +141,7 @@ class Adafruit_BME280_Advanced(Adafruit_BME280):
     """
 
     # pylint: disable=too-many-instance-attributes
-    def __init__(self):
+    def __init__(self) -> None:
         """Check the BME280 was found, read the coefficients and enable the sensor"""
         self._overscan_humidity = OVERSCAN_X1
         self._overscan_temperature = OVERSCAN_X1
@@ -144,7 +151,7 @@ class Adafruit_BME280_Advanced(Adafruit_BME280):
         super().__init__()
 
     @property
-    def standby_period(self):
+    def standby_period(self) -> int:
         """
         Control the inactive period when in Normal mode
         Allowed standby periods are the constants STANDBY_TC_*
@@ -152,7 +159,7 @@ class Adafruit_BME280_Advanced(Adafruit_BME280):
         return self._t_standby
 
     @standby_period.setter
-    def standby_period(self, value):
+    def standby_period(self, value: int) -> None:
         if not value in _BME280_STANDBY_TCS:
             raise ValueError("Standby Period '%s' not supported" % (value))
         if self._t_standby == value:
@@ -161,7 +168,7 @@ class Adafruit_BME280_Advanced(Adafruit_BME280):
         self._write_config()
 
     @property
-    def overscan_humidity(self):
+    def overscan_humidity(self) -> int:
         """
         Humidity Oversampling
         Allowed values are the constants OVERSCAN_*
@@ -169,14 +176,14 @@ class Adafruit_BME280_Advanced(Adafruit_BME280):
         return self._overscan_humidity
 
     @overscan_humidity.setter
-    def overscan_humidity(self, value):
+    def overscan_humidity(self, value: int) -> None:
         if not value in _BME280_OVERSCANS:
             raise ValueError("Overscan value '%s' not supported" % (value))
         self._overscan_humidity = value
         self._write_ctrl_meas()
 
     @property
-    def overscan_temperature(self):
+    def overscan_temperature(self) -> int:
         """
         Temperature Oversampling
         Allowed values are the constants OVERSCAN_*
@@ -184,14 +191,14 @@ class Adafruit_BME280_Advanced(Adafruit_BME280):
         return self._overscan_temperature
 
     @overscan_temperature.setter
-    def overscan_temperature(self, value):
+    def overscan_temperature(self, value: int) -> None:
         if not value in _BME280_OVERSCANS:
             raise ValueError("Overscan value '%s' not supported" % (value))
         self._overscan_temperature = value
         self._write_ctrl_meas()
 
     @property
-    def overscan_pressure(self):
+    def overscan_pressure(self) -> int:
         """
         Pressure Oversampling
         Allowed values are the constants OVERSCAN_*
@@ -199,14 +206,14 @@ class Adafruit_BME280_Advanced(Adafruit_BME280):
         return self._overscan_pressure
 
     @overscan_pressure.setter
-    def overscan_pressure(self, value):
+    def overscan_pressure(self, value: int) -> None:
         if not value in _BME280_OVERSCANS:
             raise ValueError("Overscan value '%s' not supported" % (value))
         self._overscan_pressure = value
         self._write_ctrl_meas()
 
     @property
-    def iir_filter(self):
+    def iir_filter(self) -> int:
         """
         Controls the time constant of the IIR filter
         Allowed values are the constants IIR_FILTER_*
@@ -214,14 +221,14 @@ class Adafruit_BME280_Advanced(Adafruit_BME280):
         return self._iir_filter
 
     @iir_filter.setter
-    def iir_filter(self, value):
+    def iir_filter(self, value: int) -> None:
         if not value in _BME280_IIR_FILTERS:
             raise ValueError("IIR Filter '%s' not supported" % (value))
         self._iir_filter = value
         self._write_config()
 
     @property
-    def _config(self):
+    def _config(self) -> int:
         """Value to be written to the device's config register """
         config = 0
         if self.mode == MODE_NORMAL:
@@ -231,7 +238,7 @@ class Adafruit_BME280_Advanced(Adafruit_BME280):
         return config
 
     @property
-    def _ctrl_meas(self):
+    def _ctrl_meas(self) -> int:
         """Value to be written to the device's ctrl_meas register """
         ctrl_meas = self.overscan_temperature << 5
         ctrl_meas += self.overscan_pressure << 2
@@ -239,7 +246,7 @@ class Adafruit_BME280_Advanced(Adafruit_BME280):
         return ctrl_meas
 
     @property
-    def measurement_time_typical(self):
+    def measurement_time_typical(self) -> float:
         """Typical time in milliseconds required to complete a measurement in normal mode"""
         meas_time_ms = 1.0
         if self.overscan_temperature != OVERSCAN_DISABLE:
@@ -251,7 +258,7 @@ class Adafruit_BME280_Advanced(Adafruit_BME280):
         return meas_time_ms
 
     @property
-    def measurement_time_max(self):
+    def measurement_time_max(self) -> float:
         """Maximum time in milliseconds required to complete a measurement in normal mode"""
         meas_time_ms = 1.25
         if self.overscan_temperature != OVERSCAN_DISABLE:
@@ -309,7 +316,7 @@ class Adafruit_BME280_I2C(Adafruit_BME280_Advanced):
 
     """
 
-    def __init__(self, i2c, address=_BME280_ADDRESS):
+    def __init__(self, i2c: I2C, address: int = _BME280_ADDRESS) -> None:
         from adafruit_bus_device import (  # pylint: disable=import-outside-toplevel
             i2c_device,
         )
@@ -317,7 +324,7 @@ class Adafruit_BME280_I2C(Adafruit_BME280_Advanced):
         self._i2c = i2c_device.I2CDevice(i2c, address)
         super().__init__()
 
-    def _read_register(self, register, length):
+    def _read_register(self, register: int, length: int) -> bytearray:
         with self._i2c as i2c:
             i2c.write(bytes([register & 0xFF]))
             result = bytearray(length)
@@ -325,7 +332,7 @@ class Adafruit_BME280_I2C(Adafruit_BME280_Advanced):
             # print("$%02X => %s" % (register, [hex(i) for i in result]))
             return result
 
-    def _write_register_byte(self, register, value):
+    def _write_register_byte(self, register: int, value: int) -> None:
         with self._i2c as i2c:
             i2c.write(bytes([register & 0xFF, value & 0xFF]))
             # print("$%02X <= 0x%02X" % (register, value))
@@ -379,7 +386,7 @@ class Adafruit_BME280_SPI(Adafruit_BME280_Advanced):
 
     """
 
-    def __init__(self, spi, cs, baudrate=100000):
+    def __init__(self, spi: SPI, cs: DigitalInOut, baudrate: int = 100000) -> None:
         from adafruit_bus_device import (  # pylint: disable=import-outside-toplevel
             spi_device,
         )
@@ -387,7 +394,7 @@ class Adafruit_BME280_SPI(Adafruit_BME280_Advanced):
         self._spi = spi_device.SPIDevice(spi, cs, baudrate=baudrate)
         super().__init__()
 
-    def _read_register(self, register, length):
+    def _read_register(self, register: int, length: int) -> bytearray:
         register = (register | 0x80) & 0xFF  # Read single, bit 7 high.
         with self._spi as spi:
             spi.write(bytearray([register]))  # pylint: disable=no-member
@@ -396,7 +403,7 @@ class Adafruit_BME280_SPI(Adafruit_BME280_Advanced):
             # print("$%02X => %s" % (register, [hex(i) for i in result]))
             return result
 
-    def _write_register_byte(self, register, value):
+    def _write_register_byte(self, register: int, value: int) -> None:
         register &= 0x7F  # Write, bit 7 low.
         with self._spi as spi:
             spi.write(bytes([register, value & 0xFF]))  # pylint: disable=no-member
