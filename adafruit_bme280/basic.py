@@ -36,7 +36,7 @@ from time import sleep
 from micropython import const
 
 try:
-    from typing import Optional
+    import typing  # pylint: disable=unused-import
     from busio import I2C, SPI
     from digitalio import DigitalInOut
 except ImportError:
