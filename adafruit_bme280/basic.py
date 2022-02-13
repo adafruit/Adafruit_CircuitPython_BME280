@@ -204,10 +204,9 @@ class Adafruit_BME280:
         return self._t_fine / 5120.0
 
     @property
-    def pressure(self) -> Optional[float]:
+    def pressure(self) -> float:
         """
         The compensated pressure in hectoPascals.
-        returns None if pressure measurement is disabled
         """
         self._read_temperature()
 
@@ -237,18 +236,16 @@ class Adafruit_BME280:
         return pressure
 
     @property
-    def relative_humidity(self) -> Optional[float]:
+    def relative_humidity(self) -> float:
         """
         The relative humidity in RH %
-        returns None if humidity measurement is disabled
         """
         return self.humidity
 
     @property
-    def humidity(self) -> Optional[float]:
+    def humidity(self) -> float:
         """
         The relative humidity in RH %
-        returns None if humidity measurement is disabled
         """
         self._read_temperature()
         hum = self._read_register(0xFD, 2)  # BME280_REGISTER_HUMIDDATA
