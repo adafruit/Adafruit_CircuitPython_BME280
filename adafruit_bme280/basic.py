@@ -146,15 +146,15 @@ class Adafruit_BME280:
         self._write_register_byte(_BME280_REGISTER_CTRL_MEAS, self._ctrl_meas)
 
     def _get_status(self) -> int:
-        """Get the value from the status register in the device """
+        """Get the value from the status register in the device"""
         return self._read_byte(_BME280_REGISTER_STATUS)
 
     def _read_config(self) -> int:
-        """Read the value from the config register in the device """
+        """Read the value from the config register in the device"""
         return self._read_byte(_BME280_REGISTER_CONFIG)
 
     def _write_config(self) -> None:
-        """Write the value to the config register in the device """
+        """Write the value to the config register in the device"""
         normal_flag = False
         if self._mode == MODE_NORMAL:
             # Writes to the config register may be ignored while in Normal mode
@@ -181,7 +181,7 @@ class Adafruit_BME280:
 
     @property
     def _config(self) -> int:
-        """Value to be written to the device's config register """
+        """Value to be written to the device's config register"""
         config = 0
         if self.mode == 0x03:  # MODE_NORMAL
             config += self._t_standby << 5
@@ -191,7 +191,7 @@ class Adafruit_BME280:
 
     @property
     def _ctrl_meas(self) -> int:
-        """Value to be written to the device's ctrl_meas register """
+        """Value to be written to the device's ctrl_meas register"""
         ctrl_meas = self.overscan_temperature << 5
         ctrl_meas += self.overscan_pressure << 2
         ctrl_meas += self.mode

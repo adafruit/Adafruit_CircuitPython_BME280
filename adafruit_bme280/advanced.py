@@ -229,7 +229,7 @@ class Adafruit_BME280_Advanced(Adafruit_BME280):
 
     @property
     def _config(self) -> int:
-        """Value to be written to the device's config register """
+        """Value to be written to the device's config register"""
         config = 0
         if self.mode == MODE_NORMAL:
             config += self._t_standby << 5
@@ -239,7 +239,7 @@ class Adafruit_BME280_Advanced(Adafruit_BME280):
 
     @property
     def _ctrl_meas(self) -> int:
-        """Value to be written to the device's ctrl_meas register """
+        """Value to be written to the device's ctrl_meas register"""
         ctrl_meas = self.overscan_temperature << 5
         ctrl_meas += self.overscan_pressure << 2
         ctrl_meas += self.mode
