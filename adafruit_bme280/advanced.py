@@ -31,6 +31,7 @@ Implementation Notes
 """
 from micropython import const
 from adafruit_bme280.basic import Adafruit_BME280
+from adafruit_bme280.protocol import I2C_Impl, SPI_Impl
 
 try:
     import typing  # pylint: disable=unused-import
@@ -141,14 +142,14 @@ class Adafruit_BME280_Advanced(Adafruit_BME280):
     """
 
     # pylint: disable=too-many-instance-attributes
-    def __init__(self) -> None:
+    def __init__(self, proxy) -> None:
         """Check the BME280 was found, read the coefficients and enable the sensor"""
         self._overscan_humidity = OVERSCAN_X1
         self._overscan_temperature = OVERSCAN_X1
         self._overscan_pressure = OVERSCAN_X16
         self._mode = MODE_SLEEP
         self._t_standby = STANDBY_TC_125
-        super().__init__()
+        super().__init__(proxy)
 
     @property
     def standby_period(self) -> int:
@@ -317,25 +318,7 @@ class Adafruit_BME280_I2C(Adafruit_BME280_Advanced):
     """
 
     def __init__(self, i2c: I2C, address: int = _BME280_ADDRESS) -> None:
-        from adafruit_bus_device import (  # pylint: disable=import-outside-toplevel
-            i2c_device,
-        )
-
-        self._i2c = i2c_device.I2CDevice(i2c, address)
-        super().__init__()
-
-    def _read_register(self, register: int, length: int) -> bytearray:
-        with self._i2c as i2c:
-            i2c.write(bytes([register & 0xFF]))
-            result = bytearray(length)
-            i2c.readinto(result)
-            # print("$%02X => %s" % (register, [hex(i) for i in result]))
-            return result
-
-    def _write_register_byte(self, register: int, value: int) -> None:
-        with self._i2c as i2c:
-            i2c.write(bytes([register & 0xFF, value & 0xFF]))
-            # print("$%02X <= 0x%02X" % (register, value))
+        super().__init__(I2C_Impl(i2c, address))
 
 
 class Adafruit_BME280_SPI(Adafruit_BME280_Advanced):
@@ -387,23 +370,4 @@ class Adafruit_BME280_SPI(Adafruit_BME280_Advanced):
     """
 
     def __init__(self, spi: SPI, cs: DigitalInOut, baudrate: int = 100000) -> None:
-        from adafruit_bus_device import (  # pylint: disable=import-outside-toplevel
-            spi_device,
-        )
-
-        self._spi = spi_device.SPIDevice(spi, cs, baudrate=baudrate)
-        super().__init__()
-
-    def _read_register(self, register: int, length: int) -> bytearray:
-        register = (register | 0x80) & 0xFF  # Read single, bit 7 high.
-        with self._spi as spi:
-            spi.write(bytearray([register]))  # pylint: disable=no-member
-            result = bytearray(length)
-            spi.readinto(result)  # pylint: disable=no-member
-            # print("$%02X => %s" % (register, [hex(i) for i in result]))
-            return result
-
-    def _write_register_byte(self, register: int, value: int) -> None:
-        register &= 0x7F  # Write, bit 7 low.
-        with self._spi as spi:
-            spi.write(bytes([register, value & 0xFF]))  # pylint: disable=no-member
+        super().__init__(SPI_Impl(spi, cs, baudrate))
