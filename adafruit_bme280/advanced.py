@@ -142,7 +142,7 @@ class Adafruit_BME280_Advanced(Adafruit_BME280):
     """
 
     # pylint: disable=too-many-instance-attributes
-    def __init__(self, proxy) -> None:
+    def __init__(self, proxy: typing.Union[I2C_Impl, SPI_Impl]) -> None:
         """Check the BME280 was found, read the coefficients and enable the sensor"""
         self._overscan_humidity = OVERSCAN_X1
         self._overscan_temperature = OVERSCAN_X1
