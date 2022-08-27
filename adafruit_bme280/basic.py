@@ -89,10 +89,10 @@ class Adafruit_BME280:
     """
 
     # pylint: disable=too-many-instance-attributes
-    def __init__(self, proxy: typing.Union[I2C_Impl, SPI_Impl]) -> None:
+    def __init__(self, bus_implementation: typing.Union[I2C_Impl, SPI_Impl]) -> None:
         """Check the BME280 was found, read the coefficients and enable the sensor"""
         # Check device ID.
-        self._proxy = proxy
+        self._bus_implementation = bus_implementation
         chip_id = self._read_byte(_BME280_REGISTER_CHIPID)
         if _BME280_CHIPID != chip_id:
             raise RuntimeError("Failed to find BME280! Chip ID 0x%x" % chip_id)
@@ -311,10 +311,10 @@ class Adafruit_BME280:
         return ret
 
     def _read_register(self, register: int, length: int) -> bytearray:
-        return self._proxy.read_register(register, length)
+        return self._bus_implementation.read_register(register, length)
 
     def _write_register_byte(self, register: int, value: int) -> None:
-        self._proxy.write_register_byte(register, value)
+        self._bus_implementation.write_register_byte(register, value)
 
 
 class Adafruit_BME280_I2C(Adafruit_BME280):
