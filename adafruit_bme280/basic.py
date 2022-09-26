@@ -34,6 +34,7 @@ import struct
 from time import sleep
 
 from micropython import const
+from adafruit_bme280.protocol import I2C_Impl, SPI_Impl
 
 try:
     import typing  # pylint: disable=unused-import
@@ -88,9 +89,10 @@ class Adafruit_BME280:
     """
 
     # pylint: disable=too-many-instance-attributes
-    def __init__(self) -> None:
+    def __init__(self, bus_implementation: typing.Union[I2C_Impl, SPI_Impl]) -> None:
         """Check the BME280 was found, read the coefficients and enable the sensor"""
         # Check device ID.
+        self._bus_implementation = bus_implementation
         chip_id = self._read_byte(_BME280_REGISTER_CHIPID)
         if _BME280_CHIPID != chip_id:
             raise RuntimeError("Failed to find BME280! Chip ID 0x%x" % chip_id)
@@ -309,10 +311,10 @@ class Adafruit_BME280:
         return ret
 
     def _read_register(self, register: int, length: int) -> bytearray:
-        raise NotImplementedError()
+        return self._bus_implementation.read_register(register, length)
 
     def _write_register_byte(self, register: int, value: int) -> None:
-        raise NotImplementedError()
+        self._bus_implementation.write_register_byte(register, value)
 
 
 class Adafruit_BME280_I2C(Adafruit_BME280):
@@ -363,24 +365,7 @@ class Adafruit_BME280_I2C(Adafruit_BME280):
     """
 
     def __init__(self, i2c: I2C, address: int = 0x77) -> None:  # BME280_ADDRESS
-        from adafruit_bus_device import (  # pylint: disable=import-outside-toplevel
-            i2c_device,
-        )
-
-        self._i2c = i2c_device.I2CDevice(i2c, address)
-        super().__init__()
-
-    def _read_register(self, register: int, length: int) -> bytearray:
-        with self._i2c as i2c:
-            i2c.write(bytes([register & 0xFF]))
-            result = bytearray(length)
-            i2c.readinto(result)
-            return result
-
-    def _write_register_byte(self, register: int, value: int) -> None:
-        with self._i2c as i2c:
-            i2c.write(bytes([register & 0xFF, value & 0xFF]))
-            # print("$%02X <= 0x%02X" % (register, value))
+        super().__init__(I2C_Impl(i2c, address))
 
 
 class Adafruit_BME280_SPI(Adafruit_BME280):
@@ -433,22 +418,4 @@ class Adafruit_BME280_SPI(Adafruit_BME280):
     """
 
     def __init__(self, spi: SPI, cs: DigitalInOut, baudrate: int = 100000) -> None:
-        from adafruit_bus_device import (  # pylint: disable=import-outside-toplevel
-            spi_device,
-        )
-
-        self._spi = spi_device.SPIDevice(spi, cs, baudrate=baudrate)
-        super().__init__()
-
-    def _read_register(self, register: int, length: int) -> bytearray:
-        register = (register | 0x80) & 0xFF  # Read single, bit 7 high.
-        with self._spi as spi:
-            spi.write(bytearray([register]))  # pylint: disable=no-member
-            result = bytearray(length)
-            spi.readinto(result)  # pylint: disable=no-member
-            return result
-
-    def _write_register_byte(self, register: int, value: int) -> None:
-        register &= 0x7F  # Write, bit 7 low.
-        with self._spi as spi:
-            spi.write(bytes([register, value & 0xFF]))  # pylint: disable=no-member
+        super().__init__(SPI_Impl(spi, cs, baudrate))
