@@ -34,7 +34,12 @@ class I2C_Impl:
 class SPI_Impl:
     "Protocol implemenation for the SPI bus."
 
-    def __init__(self, spi: SPI, cs: DigitalInOut, baudrate: int = 100000) -> None:
+    def __init__(
+        self,
+        spi: SPI,
+        cs: DigitalInOut,  # pylint: disable=invalid-name
+        baudrate: int = 100000,
+    ) -> None:
         from adafruit_bus_device import (  # pylint: disable=import-outside-toplevel
             spi_device,
         )
