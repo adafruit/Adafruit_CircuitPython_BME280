@@ -7,6 +7,7 @@ from adafruit_bme280 import basic as adafruit_bme280
 
 # Create sensor object, using the board's default I2C bus.
 i2c = board.I2C()  # uses board.SCL and board.SDA
+# i2c = board.STEMMA_I2C()  # For using the built-in STEMMA QT connector on a microcontroller
 bme280 = adafruit_bme280.Adafruit_BME280_I2C(i2c)
 
 # OR create sensor object, using the board's default SPI bus.
