@@ -37,14 +37,14 @@ class SPI_Impl:
     def __init__(
         self,
         spi: SPI,
-        chip_select: DigitalInOut,
+        cs: DigitalInOut,
         baudrate: int = 100000,
     ) -> None:
         from adafruit_bus_device import (  # pylint: disable=import-outside-toplevel
             spi_device,
         )
 
-        self._spi = spi_device.SPIDevice(spi, chip_select, baudrate=baudrate)
+        self._spi = spi_device.SPIDevice(spi, cs, baudrate=baudrate)
 
     def read_register(self, register: int, length: int) -> bytearray:
         "Read from the device register."

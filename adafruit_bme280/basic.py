@@ -373,7 +373,7 @@ class Adafruit_BME280_SPI(Adafruit_BME280):
     """Driver for BME280 connected over SPI
 
     :param ~busio.SPI spi: SPI device
-    :param ~digitalio.DigitalInOut chip_select: Chip Select
+    :param ~digitalio.DigitalInOut cs: Chip Select
     :param int baudrate: Clock rate, default is 100000. Can be changed with :meth:`baudrate`
 
     .. note::
@@ -395,9 +395,9 @@ class Adafruit_BME280_SPI(Adafruit_BME280):
 
         .. code-block:: python
 
-            chip_select = digitalio.DigitalInOut(board.D10)
+            cs = digitalio.DigitalInOut(board.D10)
             spi = board.SPI()
-            bme280 = adafruit_bme280.Adafruit_BME280_SPI(spi, chip_select)
+            bme280 = adafruit_bme280.Adafruit_BME280_SPI(spi, cs)
 
         You need to setup the pressure at sea level
 
@@ -417,7 +417,5 @@ class Adafruit_BME280_SPI(Adafruit_BME280):
 
     """
 
-    def __init__(
-        self, spi: SPI, chip_select: DigitalInOut, baudrate: int = 100000
-    ) -> None:
-        super().__init__(SPI_Impl(spi, chip_select, baudrate))
+    def __init__(self, spi: SPI, cs: DigitalInOut, baudrate: int = 100000) -> None:
+        super().__init__(SPI_Impl(spi, cs, baudrate))
