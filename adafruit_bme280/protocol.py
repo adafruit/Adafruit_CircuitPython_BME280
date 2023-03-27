@@ -26,25 +26,25 @@ class I2C_Impl:
             return result
 
     def write_register_byte(self, register: int, value: int) -> None:
-        "Write to the device register."
+        """Write to the device register"""
         with self._i2c as i2c:
             i2c.write(bytes([register & 0xFF, value & 0xFF]))
 
 
 class SPI_Impl:
-    "Protocol implemenation for the SPI bus."
+    """Protocol implemenation for the SPI bus."""
 
     def __init__(
         self,
         spi: SPI,
-        cs: DigitalInOut,  # pylint: disable=invalid-name
+        chip_select: DigitalInOut,
         baudrate: int = 100000,
     ) -> None:
         from adafruit_bus_device import (  # pylint: disable=import-outside-toplevel
             spi_device,
         )
 
-        self._spi = spi_device.SPIDevice(spi, cs, baudrate=baudrate)
+        self._spi = spi_device.SPIDevice(spi, chip_select, baudrate=baudrate)
 
     def read_register(self, register: int, length: int) -> bytearray:
         "Read from the device register."

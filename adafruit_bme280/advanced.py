@@ -284,36 +284,36 @@ class Adafruit_BME280_I2C(Adafruit_BME280_Advanced):
 
     **Quickstart: Importing and using the BME280**
 
-        Here is an example of using the :class:`Adafruit_BME280_I2C`.
-        First you will need to import the libraries to use the sensor
+    Here is an example of using the :class:`Adafruit_BME280_I2C`.
+    First you will need to import the libraries to use the sensor
 
-        .. code-block:: python
+    .. code-block:: python
 
-            import board
-            import adafruit_bme280.advanced as adafruit_bme280
+        import board
+        import adafruit_bme280.advanced as adafruit_bme280
 
-        Once this is done you can define your `board.I2C` object and define your sensor object
+    Once this is done you can define your `board.I2C` object and define your sensor object
 
-        .. code-block:: python
+    .. code-block:: python
 
-            i2c = board.I2C()   # uses board.SCL and board.SDA
-            bme280 = adafruit_bme280.Adafruit_BME280_I2C(i2c)
+        i2c = board.I2C()   # uses board.SCL and board.SDA
+        bme280 = adafruit_bme280.Adafruit_BME280_I2C(i2c)
 
-        You need to setup the pressure at sea level
+    You need to setup the pressure at sea level
 
-        .. code-block:: python
+    .. code-block:: python
 
-            bme280.sea_level_pressure = 1013.25
+        bme280.sea_level_pressure = 1013.25
 
-        Now you have access to the :attr:`temperature`, :attr:`relative_humidity`
-        :attr:`pressure` and :attr:`altitude` attributes
+    Now you have access to the :attr:`temperature`, :attr:`relative_humidity`
+    :attr:`pressure` and :attr:`altitude` attributes
 
-        .. code-block:: python
+    .. code-block:: python
 
-            temperature = bme280.temperature
-            relative_humidity = bme280.relative_humidity
-            pressure = bme280.pressure
-            altitude = bme280.altitude
+        temperature = bme280.temperature
+        relative_humidity = bme280.relative_humidity
+        pressure = bme280.pressure
+        altitude = bme280.altitude
 
     """
 
@@ -325,7 +325,7 @@ class Adafruit_BME280_SPI(Adafruit_BME280_Advanced):
     """Driver for BME280 connected over SPI
 
     :param ~busio.SPI spi: SPI device
-    :param ~digitalio.DigitalInOut cs: Chip Select
+    :param ~digitalio.DigitalInOut chip_select: Chip Select
     :param int baudrate: Clock rate, default is 100000. Can be changed with :meth:`baudrate`
 
     .. note::
@@ -334,40 +334,42 @@ class Adafruit_BME280_SPI(Adafruit_BME280_Advanced):
 
     **Quickstart: Importing and using the BME280**
 
-        Here is an example of using the :class:`Adafruit_BME280_SPI` class.
-        First you will need to import the libraries to use the sensor
+    Here is an example of using the :class:`Adafruit_BME280_SPI` class.
+    First you will need to import the libraries to use the sensor
 
-        .. code-block:: python
+    .. code-block:: python
 
-            import board
-            from digitalio import DigitalInOut
-            import adafruit_bme280.advanced as adafruit_bme280
+        import board
+        from digitalio import DigitalInOut
+        import adafruit_bme280.advanced as adafruit_bme280
 
-        Once this is done you can define your `board.SPI` object and define your sensor object
+    Once this is done you can define your `board.SPI` object and define your sensor object
 
-        .. code-block:: python
+    .. code-block:: python
 
-            cs = digitalio.DigitalInOut(board.D10)
-            spi = board.SPI()
-            bme280 = adafruit_bme280.Adafruit_BME280_SPI(spi, cs)
+        chip_select = digitalio.DigitalInOut(board.D10)
+        spi = board.SPI()
+        bme280 = adafruit_bme280.Adafruit_BME280_SPI(spi, chip_select)
 
-        You need to setup the pressure at sea level
+    You need to setup the pressure at sea level
 
-        .. code-block:: python
+    .. code-block:: python
 
-            bme280.sea_level_pressure = 1013.25
+        bme280.sea_level_pressure = 1013.25
 
-        Now you have access to the :attr:`temperature`, :attr:`relative_humidity`
-        :attr:`pressure` and :attr:`altitude` attributes
+    Now you have access to the :attr:`temperature`, :attr:`relative_humidity`
+    :attr:`pressure` and :attr:`altitude` attributes
 
-        .. code-block:: python
+    .. code-block:: python
 
-            temperature = bme280.temperature
-            relative_humidity = bme280.relative_humidity
-            pressure = bme280.pressure
-            altitude = bme280.altitude
+        temperature = bme280.temperature
+        relative_humidity = bme280.relative_humidity
+        pressure = bme280.pressure
+        altitude = bme280.altitude
 
     """
 
-    def __init__(self, spi: SPI, cs: DigitalInOut, baudrate: int = 100000) -> None:
-        super().__init__(SPI_Impl(spi, cs, baudrate))
+    def __init__(
+        self, spi: SPI, chip_select: DigitalInOut, baudrate: int = 100000
+    ) -> None:
+        super().__init__(SPI_Impl(spi, chip_select, baudrate))
