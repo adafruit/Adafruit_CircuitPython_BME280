@@ -9,3 +9,6 @@
 
 .. automodule:: adafruit_bme280.advanced
    :members:
+
+.. automodule:: adafruit_bme280.protocol
+   :members:
