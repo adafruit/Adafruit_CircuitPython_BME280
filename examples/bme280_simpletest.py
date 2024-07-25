@@ -11,6 +11,7 @@ i2c = board.I2C()  # uses board.SCL and board.SDA
 bme280 = adafruit_bme280.Adafruit_BME280_I2C(i2c)
 
 # OR create sensor object, using the board's default SPI bus.
+# import digitalio
 # spi = board.SPI()
 # bme_cs = digitalio.DigitalInOut(board.D10)
 # bme280 = adafruit_bme280.Adafruit_BME280_SPI(spi, bme_cs)
