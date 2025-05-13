@@ -29,15 +29,18 @@ Implementation Notes
   https://github.com/adafruit/Adafruit_CircuitPython_BusDevice
 
 """
+
 import math
 import struct
 from time import sleep
 
 from micropython import const
+
 from adafruit_bme280.protocol import I2C_Impl, SPI_Impl
 
 try:
-    import typing  # pylint: disable=unused-import
+    import typing
+
     from busio import I2C, SPI
     from digitalio import DigitalInOut
 except ImportError:
@@ -88,7 +91,6 @@ class Adafruit_BME280:
 
     """
 
-    # pylint: disable=too-many-instance-attributes
     def __init__(self, bus_implementation: typing.Union[I2C_Impl, SPI_Impl]) -> None:
         """Check the BME280 was found, read the coefficients and enable the sensor"""
         # Check device ID.
@@ -118,13 +120,9 @@ class Adafruit_BME280:
             # Wait for conversion to complete
             while self._get_status() & 0x08:
                 sleep(0.002)
-        raw_temperature = (
-            self._read24(_BME280_REGISTER_TEMPDATA) / 16
-        )  # lowest 4 bits get dropped
+        raw_temperature = self._read24(_BME280_REGISTER_TEMPDATA) / 16  # lowest 4 bits get dropped
 
-        var1 = (
-            raw_temperature / 16384.0 - self._temp_calib[0] / 1024.0
-        ) * self._temp_calib[1]
+        var1 = (raw_temperature / 16384.0 - self._temp_calib[0] / 1024.0) * self._temp_calib[1]
 
         var2 = (
             (raw_temperature / 131072.0 - self._temp_calib[0] / 8192.0)
@@ -256,9 +254,7 @@ class Adafruit_BME280:
         # Algorithm from the BME280 driver
         # https://github.com/BoschSensortec/BME280_driver/blob/master/bme280.c
         var1 = float(self._t_fine) - 76800.0
-        var2 = (
-            self._humidity_calib[3] * 64.0 + (self._humidity_calib[4] / 16384.0) * var1
-        )
+        var2 = self._humidity_calib[3] * 64.0 + (self._humidity_calib[4] / 16384.0) * var1
         var3 = adc - var2
         var4 = self._humidity_calib[1] / 65536.0
         var5 = 1.0 + (self._humidity_calib[2] / 67108864.0) * var1
@@ -318,7 +314,6 @@ class Adafruit_BME280:
 
 
 class Adafruit_BME280_I2C(Adafruit_BME280):
-
     """Driver for BME280 connected over I2C
 
     :param ~busio.I2C i2c: The I2C bus the BME280 is connected to.
@@ -369,7 +364,6 @@ class Adafruit_BME280_I2C(Adafruit_BME280):
 
 
 class Adafruit_BME280_SPI(Adafruit_BME280):
-
     """Driver for BME280 connected over SPI
 
     :param ~busio.SPI spi: SPI device
