@@ -2,7 +2,9 @@
 # SPDX-License-Identifier: MIT
 
 import time
+
 import board
+
 from adafruit_bme280 import basic as adafruit_bme280
 
 # Create sensor object, using the board's default I2C bus.

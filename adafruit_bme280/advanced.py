@@ -29,12 +29,15 @@ Implementation Notes
   https://github.com/adafruit/Adafruit_CircuitPython_BusDevice
 
 """
+
 from micropython import const
+
 from adafruit_bme280.basic import Adafruit_BME280
 from adafruit_bme280.protocol import I2C_Impl, SPI_Impl
 
 try:
-    import typing  # pylint: disable=unused-import
+    import typing
+
     from busio import I2C, SPI
     from digitalio import DigitalInOut
 except ImportError:
@@ -132,7 +135,6 @@ _BME280_STANDBY_TCS = (
 )
 
 
-# pylint: disable=abstract-method
 class Adafruit_BME280_Advanced(Adafruit_BME280):
     """Driver from BME280 Temperature, Humidity and Barometric Pressure sensor
 
@@ -142,7 +144,6 @@ class Adafruit_BME280_Advanced(Adafruit_BME280):
 
     """
 
-    # pylint: disable=too-many-instance-attributes
     def __init__(self, proxy: typing.Union[I2C_Impl, SPI_Impl]) -> None:
         """Check the BME280 was found, read the coefficients and enable the sensor"""
         self._overscan_humidity = OVERSCAN_X1

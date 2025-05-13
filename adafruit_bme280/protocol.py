@@ -11,7 +11,7 @@ class I2C_Impl:
     "Protocol implementation for the I2C bus."
 
     def __init__(self, i2c: I2C, address: int) -> None:
-        from adafruit_bus_device import (  # pylint: disable=import-outside-toplevel
+        from adafruit_bus_device import (  # noqa: PLC0415
             i2c_device,
         )
 
@@ -40,7 +40,7 @@ class SPI_Impl:
         cs: DigitalInOut,
         baudrate: int = 100000,
     ) -> None:
-        from adafruit_bus_device import (  # pylint: disable=import-outside-toplevel
+        from adafruit_bus_device import (  # noqa: PLC0415
             spi_device,
         )
 
@@ -50,9 +50,9 @@ class SPI_Impl:
         "Read from the device register."
         register = (register | 0x80) & 0xFF  # Read single, bit 7 high.
         with self._spi as spi:
-            spi.write(bytearray([register]))  # pylint: disable=no-member
+            spi.write(bytearray([register]))
             result = bytearray(length)
-            spi.readinto(result)  # pylint: disable=no-member
+            spi.readinto(result)
             # print("$%02X => %s" % (register, [hex(i) for i in result]))
             return result
 
@@ -60,4 +60,4 @@ class SPI_Impl:
         "Write value to the device register."
         register &= 0x7F  # Write, bit 7 low.
         with self._spi as spi:
-            spi.write(bytes([register, value & 0xFF]))  # pylint: disable=no-member
+            spi.write(bytes([register, value & 0xFF]))
