@@ -97,7 +97,7 @@ class Adafruit_BME280:
         self._bus_implementation = bus_implementation
         chip_id = self._read_byte(_BME280_REGISTER_CHIPID)
         if _BME280_CHIPID != chip_id:
-            raise RuntimeError("Failed to find BME280! Chip ID 0x%x" % chip_id)
+            raise RuntimeError(f"Failed to find BME280! Chip ID {chip_id:#x}")
         # Set some reasonable defaults.
         self._iir_filter = IIR_FILTER_DISABLE
         self.overscan_humidity = OVERSCAN_X1
@@ -175,7 +175,7 @@ class Adafruit_BME280:
     @mode.setter
     def mode(self, value: int) -> None:
         if not value in _BME280_MODES:
-            raise ValueError("Mode '%s' not supported" % (value))
+            raise ValueError(f"Mode '{value}' not supported")
         self._mode = value
         self._write_ctrl_meas()
 
@@ -217,7 +217,7 @@ class Adafruit_BME280:
         )  # lowest 4 bits get dropped
         var1 = float(self._t_fine) / 2.0 - 64000.0
         var2 = var1 * var1 * self._pressure_calib[5] / 32768.0
-        var2 = var2 + var1 * self._pressure_calib[4] * 2.0
+        var2 += var1 * self._pressure_calib[4] * 2.0
         var2 = var2 / 4.0 + self._pressure_calib[3] * 65536.0
         var3 = self._pressure_calib[2] * var1 * var1 / 524288.0
         var1 = (var3 + self._pressure_calib[1] * var1) / 524288.0
@@ -230,7 +230,7 @@ class Adafruit_BME280:
         pressure = ((pressure - var2 / 4096.0) * 6250.0) / var1
         var1 = self._pressure_calib[8] * pressure * pressure / 2147483648.0
         var2 = pressure * self._pressure_calib[7] / 32768.0
-        pressure = pressure + (var1 + var2 + self._pressure_calib[6]) / 16.0
+        pressure += (var1 + var2 + self._pressure_calib[6]) / 16.0
 
         pressure /= 100
         return pressure

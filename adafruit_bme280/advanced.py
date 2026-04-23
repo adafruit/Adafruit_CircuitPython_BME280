@@ -164,7 +164,7 @@ class Adafruit_BME280_Advanced(Adafruit_BME280):
     @standby_period.setter
     def standby_period(self, value: int) -> None:
         if not value in _BME280_STANDBY_TCS:
-            raise ValueError("Standby Period '%s' not supported" % (value))
+            raise ValueError(f"Standby Period '{value}' not supported")
         if self._t_standby == value:
             return
         self._t_standby = value
@@ -181,7 +181,7 @@ class Adafruit_BME280_Advanced(Adafruit_BME280):
     @overscan_humidity.setter
     def overscan_humidity(self, value: int) -> None:
         if not value in _BME280_OVERSCANS:
-            raise ValueError("Overscan value '%s' not supported" % (value))
+            raise ValueError(f"Overscan value '{value}' not supported")
         self._overscan_humidity = value
         self._write_ctrl_meas()
 
@@ -196,7 +196,7 @@ class Adafruit_BME280_Advanced(Adafruit_BME280):
     @overscan_temperature.setter
     def overscan_temperature(self, value: int) -> None:
         if not value in _BME280_OVERSCANS:
-            raise ValueError("Overscan value '%s' not supported" % (value))
+            raise ValueError(f"Overscan value '{value}' not supported")
         self._overscan_temperature = value
         self._write_ctrl_meas()
 
@@ -211,7 +211,7 @@ class Adafruit_BME280_Advanced(Adafruit_BME280):
     @overscan_pressure.setter
     def overscan_pressure(self, value: int) -> None:
         if not value in _BME280_OVERSCANS:
-            raise ValueError("Overscan value '%s' not supported" % (value))
+            raise ValueError(f"Overscan value '{value}' not supported")
         self._overscan_pressure = value
         self._write_ctrl_meas()
 
@@ -226,7 +226,7 @@ class Adafruit_BME280_Advanced(Adafruit_BME280):
     @iir_filter.setter
     def iir_filter(self, value: int) -> None:
         if not value in _BME280_IIR_FILTERS:
-            raise ValueError("IIR Filter '%s' not supported" % (value))
+            raise ValueError(f"IIR Filter '{value}' not supported")
         self._iir_filter = value
         self._write_config()
 
