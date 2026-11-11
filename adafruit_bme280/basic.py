@@ -43,8 +43,13 @@ try:
 
     from busio import I2C, SPI
     from digitalio import DigitalInOut
-except ImportError:
-    pass
+except (ImportError, RuntimeError) as exc:
+    # Blinka wraps a missing platform library in RuntimeError. A board that
+    # only has an I2C sensor wired up does not need the GPIO library, and the
+    # bus types below only name the annotations, so the module imports
+    # without them.
+    if not isinstance(exc, ImportError) and not isinstance(exc.__cause__, ImportError):
+        raise
 
 __version__ = "2.6.4"
 __repo__ = "https://github.com/adafruit/Adafruit_CircuitPython_BME280.git"
@@ -359,7 +364,7 @@ class Adafruit_BME280_I2C(Adafruit_BME280):
 
     """
 
-    def __init__(self, i2c: I2C, address: int = 0x77) -> None:  # BME280_ADDRESS
+    def __init__(self, i2c: "I2C", address: int = 0x77) -> None:  # BME280_ADDRESS
         super().__init__(I2C_Impl(i2c, address))
 
 
@@ -411,5 +416,5 @@ class Adafruit_BME280_SPI(Adafruit_BME280):
 
     """
 
-    def __init__(self, spi: SPI, cs: DigitalInOut, baudrate: int = 100000) -> None:
+    def __init__(self, spi: "SPI", cs: "DigitalInOut", baudrate: int = 100000) -> None:
         super().__init__(SPI_Impl(spi, cs, baudrate))
