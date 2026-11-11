@@ -3,14 +3,22 @@
 # SPDX-License-Identifier: MIT
 "Provides the protocol objects for I2C and SPI"
 
-from busio import I2C, SPI
-from digitalio import DigitalInOut
+try:
+    from busio import I2C, SPI
+    from digitalio import DigitalInOut
+except (ImportError, RuntimeError) as exc:
+    # Blinka wraps a missing platform library in RuntimeError. A board that
+    # only has an I2C sensor wired up does not need the GPIO library, and the
+    # bus types below only name the annotations, so the module imports
+    # without them.
+    if not isinstance(exc, ImportError) and not isinstance(exc.__cause__, ImportError):
+        raise
 
 
 class I2C_Impl:
     "Protocol implementation for the I2C bus."
 
-    def __init__(self, i2c: I2C, address: int) -> None:
+    def __init__(self, i2c: "I2C", address: int) -> None:
         from adafruit_bus_device import (  # noqa: PLC0415
             i2c_device,
         )
@@ -36,8 +44,8 @@ class SPI_Impl:
 
     def __init__(
         self,
-        spi: SPI,
-        cs: DigitalInOut,
+        spi: "SPI",
+        cs: "DigitalInOut",
         baudrate: int = 100000,
     ) -> None:
         from adafruit_bus_device import (  # noqa: PLC0415
